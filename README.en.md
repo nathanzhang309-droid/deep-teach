@@ -8,6 +8,7 @@ deep-teach is a native macOS reading and study app built with SwiftUI, AppKit, P
 
 ![Automatic red-pen annotations beside a tutor conversation; synthetic lesson](docs/red-pen-demo.png)
 
+- Switch between English and Chinese in Settings without losing drafts or quiz selections.
 - Read PDFs, presentations, unencrypted EPUBs, Markdown, text, HTML and web articles.
 - Select a region and ask a tutor without leaving the page.
 - Automatically add editable red circles, arrows, underlines and short labels after an answer. Undo a response's annotations or export an annotated PDF.
@@ -29,9 +30,17 @@ bash build.sh
 open build/伴读.app
 ```
 
-The build fetches a pinned Node.js runtime from nodejs.org and verifies its SHA-256. The compiled teaching UI is included. To rebuild it, use `npm ci && npm run build` inside `TeacherUI/`. Run core and layout tests with `bash scripts/test.sh`.
+The build fetches a pinned Node.js runtime from nodejs.org and verifies its SHA-256. The compiled teaching UI is included. To rebuild it, use `npm ci && npm run build` inside `TeacherUI/`. After `npm ci` in `TeacherUI/`, run the storage, layout, bilingual request, input and localization tests with `bash scripts/test.sh` (Node.js 24 required).
 
 Choose your Obsidian vault explicitly in Settings. New installations have no vault configured and automatic sync disabled. Notes go to `Bandu/` within the vault; existing installations retain their previous sync location.
+
+## Language and input
+
+Open **Settings → Language** and choose **System / 中文 / English**. The interface, native menus and new explanations follow your choice immediately. Existing course material, notes and conversations keep their original text; unsent drafts and quiz selections survive switching. You can ask in either language. To override the selected reply language, explicitly ask the tutor to answer in your preferred language.
+
+Mixed-script and emoji titles are supported. Text imports accept UTF-8 or UTF-16 with a BOM; convert other encodings first. Questions over 5,000 Unicode code points are not sent, and the draft remains available to edit. Obsidian keeps its existing folder names; `待合并` is the pending-merge folder, where conflicts are saved for manual review.
+
+See the [bilingual adversarial test report](docs/VALIDATION.md) for measured coverage and limits.
 
 ## Privacy and limitations
 

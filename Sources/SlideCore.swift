@@ -65,9 +65,9 @@ enum SlidePDF {
     }
     static func export(_ pdf:PDFDocument,to url:URL)throws {
         let data=NSMutableData()
-        guard let consumer=CGDataConsumer(data:data as CFMutableData),let context=CGContext(consumer:consumer,mediaBox:nil,nil) else{throw ReaderError.message("无法创建PDF")}
+        guard let consumer=CGDataConsumer(data:data as CFMutableData),let context=CGContext(consumer:consumer,mediaBox:nil,nil) else{throw ReaderError.message(L("无法创建PDF"))}
         for index in 0..<pdf.pageCount {
-            guard let page=pdf.page(at:index),let ref=page.pageRef else{throw ReaderError.message("无法读取第 \(index+1) 页")}
+            guard let page=pdf.page(at:index),let ref=page.pageRef else{throw ReaderError.message(L("无法读取第 {0} 页", String(describing: index+1)))}
             let crop=page.bounds(for:.cropBox),rotated=abs(page.rotation)%180==90
             var box=CGRect(origin:.zero,size:rotated ? CGSize(width:crop.height,height:crop.width):crop.size)
             let info=[kCGPDFContextMediaBox as String:Data(bytes:&box,count:MemoryLayout<CGRect>.size)] as CFDictionary
@@ -79,7 +79,7 @@ enum SlidePDF {
             context.restoreGState();context.endPDFPage()
         }
         context.closePDF();let bytes=data as Data
-        guard let reopened=PDFDocument(data:bytes),reopened.pageCount==pdf.pageCount else{throw ReaderError.message("PDF导出失败，原文未改变")}
+        guard let reopened=PDFDocument(data:bytes),reopened.pageCount==pdf.pageCount else{throw ReaderError.message(L("PDF导出失败，原文未改变"))}
         try bytes.write(to:url,options:.atomic)
     }
 }

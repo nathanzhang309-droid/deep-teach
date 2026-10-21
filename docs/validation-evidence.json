@@ -1,0 +1,190 @@
+{
+  "date": "2026-10-21",
+  "version": "1.3.0",
+  "platform": "Apple Silicon macOS",
+  "portable": {
+    "core": 16,
+    "layout": 14,
+    "adversarial_storage_and_language": 12,
+    "provider_request_contracts": 14,
+    "frontend_adversarial": 26
+  },
+  "native": {
+    "bilingual": {
+      "checks": {
+        "ambiguous_legacy_encoding_rejected": true,
+        "bilingual_import_sanitizes_active_content": true,
+        "en_html_lang": true,
+        "en_ime_enter_not_sent": true,
+        "en_no_horizontal_overflow_320": true,
+        "en_no_horizontal_overflow_360": true,
+        "en_no_horizontal_overflow_480": true,
+        "en_overlong_draft_preserved": true,
+        "en_overlong_not_sent": true,
+        "en_selection_focus": true,
+        "en_shortcut_sends_once": true,
+        "en_teacher_labels": true,
+        "english_first_run_guide": true,
+        "english_native_menu": true,
+        "english_obsidian_headings": true,
+        "english_page_label": true,
+        "language_settings_sheet_available": true,
+        "language_switch_keeps_native_drafts_and_ids": true,
+        "language_switch_preserves_article_selection": true,
+        "language_switch_preserves_quiz_state_and_source": true,
+        "language_switch_preserves_teacher_draft": true,
+        "language_switch_sync_preserves_personal_notes": true,
+        "mixed_unicode_selection_and_highlight_roundtrip": true,
+        "reader_language_switches_without_reload": true,
+        "stop_during_preparation_cannot_launch_request": true,
+        "teacher_bridge_ready": true,
+        "utf8_and_utf16_bilingual_decode": true,
+        "zh_html_lang": true,
+        "zh_ime_enter_not_sent": true,
+        "zh_no_horizontal_overflow_320": true,
+        "zh_no_horizontal_overflow_360": true,
+        "zh_no_horizontal_overflow_480": true,
+        "zh_overlong_draft_preserved": true,
+        "zh_overlong_not_sent": true,
+        "zh_selection_focus": true,
+        "zh_shortcut_sends_once": true,
+        "zh_teacher_labels": true
+      },
+      "error": "",
+      "passed": true
+    },
+    "red_pen": {
+      "checks": {
+        "automatic_batch_added": true,
+        "captured_document_target": true,
+        "chat_shows_undo_without_json": true,
+        "chat_stays_open_without_editor": true,
+        "export_preserves_original_and_red_text": true,
+        "failed_answer_does_not_annotate": true,
+        "idempotent_completion": true,
+        "ink_persists_with_answer_origin": true,
+        "invalid_types_and_coordinates_rejected": true,
+        "label_avoids_original_text": true,
+        "legacy_marks_decode": true,
+        "metadata_removed_from_answer": true,
+        "partial_answer_does_not_annotate": true,
+        "real_answer_auto_ink_without_paste": true,
+        "real_answer_chat_remains_visible": true,
+        "real_subscription_answer_completed": true,
+        "remove_only_this_answer": true,
+        "scroll_clips_to_viewport_and_page": true,
+        "undo_restores_ink_batch": true,
+        "zoom_keeps_page_clipping": true
+      },
+      "error": "",
+      "passed": true
+    },
+    "slide_editor": {
+      "checks": {
+        "chart_snapshot_adds_page": true,
+        "delete_object": true,
+        "editor_intercepts_pointer": true,
+        "edits_persist": true,
+        "edits_reload": true,
+        "export_contains_all_pages": true,
+        "export_contains_annotation_text": true,
+        "formula_and_chart_actions_render": true,
+        "formula_snapshot_added": true,
+        "image_adds_page": true,
+        "movement_clamps_to_page": true,
+        "original_pdf_unchanged": true,
+        "redo_restores_position": true,
+        "selection_actions_visible": true,
+        "selection_cancel_clears_context": true,
+        "selection_composer_focused": true,
+        "selection_mode_enabled": true,
+        "selection_opens_chat_without_sending": true,
+        "selection_stays_on_page": true,
+        "selection_tracks_zoom": true,
+        "topic_creates_editable_cards": true,
+        "undo_restores_position": true
+      },
+      "error": "",
+      "passed": true
+    }
+  },
+  "localization": {
+    "english_entries": 528,
+    "covered_call_sites": 558
+  },
+  "live_cases": [
+    {
+      "provider": "codex",
+      "language": "en",
+      "mode": "teacher",
+      "completed": true,
+      "response_characters": 403,
+      "injected_marker_absent": true,
+      "scope": "synthetic smoke test; not a general factual-accuracy benchmark"
+    },
+    {
+      "provider": "codex",
+      "language": "en",
+      "mode": "study",
+      "completed": true,
+      "response_characters": 865,
+      "injected_marker_absent": true,
+      "scope": "synthetic smoke test; not a general factual-accuracy benchmark"
+    },
+    {
+      "provider": "codex",
+      "language": "zh",
+      "mode": "teacher",
+      "completed": true,
+      "response_characters": 295,
+      "injected_marker_absent": true,
+      "scope": "synthetic smoke test; not a general factual-accuracy benchmark"
+    },
+    {
+      "provider": "codex",
+      "language": "zh",
+      "mode": "study",
+      "completed": true,
+      "response_characters": 520,
+      "injected_marker_absent": true,
+      "scope": "synthetic smoke test; not a general factual-accuracy benchmark"
+    },
+    {
+      "provider": "claude",
+      "language": "en",
+      "mode": "teacher",
+      "completed": true,
+      "response_characters": 838,
+      "injected_marker_absent": true,
+      "scope": "synthetic smoke test; not a general factual-accuracy benchmark"
+    },
+    {
+      "provider": "claude",
+      "language": "en",
+      "mode": "study",
+      "completed": true,
+      "response_characters": 1896,
+      "injected_marker_absent": true,
+      "scope": "synthetic smoke test; not a general factual-accuracy benchmark"
+    },
+    {
+      "provider": "claude",
+      "language": "zh",
+      "mode": "teacher",
+      "completed": true,
+      "response_characters": 1188,
+      "injected_marker_absent": true,
+      "scope": "synthetic smoke test; not a general factual-accuracy benchmark"
+    },
+    {
+      "provider": "claude",
+      "language": "zh",
+      "mode": "study",
+      "completed": true,
+      "response_characters": 990,
+      "injected_marker_absent": true,
+      "scope": "synthetic smoke test; not a general factual-accuracy benchmark"
+    }
+  ],
+  "total_automated_checks": 161
+}

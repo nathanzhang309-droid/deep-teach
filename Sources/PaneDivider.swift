@@ -47,7 +47,7 @@ struct PaneDivider: View {
             .accessibilityElement()
             .accessibilityLabel(label)
             .accessibilityValue(valueDescription)
-            .help("拖动调整宽度 · 双击恢复默认 · 方向键微调")
+            .help(L("拖动调整宽度 · 双击恢复默认 · 方向键微调"))
             .accessibilityAdjustableAction { direction in
                 switch direction {
                 case .increment: onDelta(keyboardStep * accessibilityDirection)
@@ -56,7 +56,7 @@ struct PaneDivider: View {
                 }
                 onDragEnded?()
             }
-            .accessibilityAction(named: "复位") { onReset() }
+            .accessibilityAction(named: L("复位")) { onReset() }
             .animation(isDragging ? nil : .easeOut(duration: 0.12), value: highlighted)
             .onDisappear {
                 if cursorPushed { NSCursor.pop(); cursorPushed = false }

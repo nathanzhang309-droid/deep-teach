@@ -1,3 +1,4 @@
+import { t,LanguageContext } from './i18n';
 import React from 'react';
 import katex from 'katex';
 
@@ -84,8 +85,9 @@ function CardHead({ kicker, title, id }: { kicker: string; title: string; id: st
 /* ───────── 1. 推导卡片 ───────── */
 
 export function DerivationCard({ block }: { block: any }) {
+  React.useContext(LanguageContext);
   const titleId = React.useId();
-  const title = str(block?.title).trim() || '推导过程';
+  const title = str(block?.title).trim() || t("推导过程");
   const steps = arr(block?.steps)
     .map((s) => ({ expression: str(s?.expression).trim(), reason: str(s?.reason).trim() }))
     .filter((s) => s.expression || s.reason);
@@ -93,7 +95,7 @@ export function DerivationCard({ block }: { block: any }) {
 
   return (
     <section className="bd-card bd-dv" aria-labelledby={titleId}>
-      <CardHead kicker="推导" title={title} id={titleId} />
+      <CardHead kicker={t("推导")} title={title} id={titleId} />
 
       {steps.length > 0 && (
         <ol className="bd-dv-steps">
@@ -103,15 +105,15 @@ export function DerivationCard({ block }: { block: any }) {
                 {i + 1}
               </span>
               <div className="bd-dv-body">
-                <span className="bd-sr">第 {i + 1} 步</span>
+                <span className="bd-sr">{t("第 {0} 步",i+1)}</span>
                 {s.expression && (
-                  <div className="bd-dv-math" tabIndex={0} role="group" aria-label={`第 ${i + 1} 步算式`}>
+                  <div className="bd-dv-math" tabIndex={0} role="group" aria-label={t("第 {0} 步算式", i + 1)}>
                     <Tex expr={s.expression} display />
                   </div>
                 )}
                 {s.reason && (
                   <p className="bd-dv-reason">
-                    <span className="bd-dv-because">依据</span>
+                    <span className="bd-dv-because">{t("依据")}</span>
                     <span className="bd-dv-reason-text">
                       <RichText text={s.reason} />
                     </span>
@@ -125,7 +127,7 @@ export function DerivationCard({ block }: { block: any }) {
 
       {conclusion && (
         <div className="bd-dv-conc">
-          <span className="bd-dv-conc-label">结论</span>
+          <span className="bd-dv-conc-label">{t("结论")}</span>
           <div className="bd-dv-conc-body">
             <SmartText text={conclusion} />
           </div>
@@ -332,8 +334,9 @@ function LewisSvg({ atoms, bonds, total, label }: { atoms: LAtom[]; bonds: LBond
 }
 
 export function LewisCard({ block }: { block: any }) {
+  React.useContext(LanguageContext);
   const titleId = React.useId();
-  const title = str(block?.title).trim() || '路易斯结构';
+  const title = str(block?.title).trim() || t("路易斯结构");
   const caption = str(block?.caption).trim();
   const audit = str(block?.audit).trim();
   const { atoms, bonds, dense, total } = React.useMemo(() => normLewis(block), [block]);
@@ -354,24 +357,24 @@ export function LewisCard({ block }: { block: any }) {
   const details = atoms.map((a) => {
     const links = bonds
       .filter((b) => b.a === a || b.b === a)
-      .map((b) => `与 ${names.get(b.a === a ? b.b : b.a)} 形成${BOND_NAME[b.order]}`);
+      .map((b) => t("与 {0} 形成{1}", names.get(b.a === a ? b.b : b.a), t(BOND_NAME[b.order])));
     const facts: string[] = [];
     if (links.length) facts.push(links.join('，'));
-    facts.push(a.pairs.length ? `${a.pairs.length} 对孤电子对` : '无孤电子对');
-    if (a.singles.length) facts.push(`${a.singles.length} 个未成对电子`);
-    if (a.charge) facts.push(`形式电荷 ${a.charge > 0 ? '+' : '−'}${Math.abs(a.charge)}`);
+    facts.push(a.pairs.length ? t("{0} 对孤电子对", a.pairs.length) : t("无孤电子对"));
+    if (a.singles.length) facts.push(t("{0} 个未成对电子", a.singles.length));
+    if (a.charge) facts.push(t("形式电荷 {0}{1}", a.charge > 0 ? '+' : '−', Math.abs(a.charge)));
     return { a, name: names.get(a) || a.el, text: facts.join('；') + '。' };
   });
 
-  const svgLabel = `${title}的路易斯结构图`;
+  const svgLabel = t("{0}的路易斯结构图", title);
   const hasAtoms = atoms.length > 0;
 
   return (
     <section className="bd-card bd-lw" aria-labelledby={titleId}>
-      <CardHead kicker="结构" title={title} id={titleId} />
+      <CardHead kicker={t("结构")} title={title} id={titleId} />
 
       {hasAtoms && (
-        <div className="bd-tabs" role="tablist" aria-label="查看方式">
+        <div className="bd-tabs" role="tablist" aria-label={t("查看方式")}>
           <button
             type="button"
             role="tab"
@@ -379,8 +382,7 @@ export function LewisCard({ block }: { block: any }) {
             className={page === 'diagram' ? 'is-on' : ''}
             onClick={() => setPage('diagram')}
           >
-            结构图
-          </button>
+            {t("结构图")}</button>
           <button
             type="button"
             role="tab"
@@ -388,14 +390,13 @@ export function LewisCard({ block }: { block: any }) {
             className={page === 'detail' ? 'is-on' : ''}
             onClick={() => setPage('detail')}
           >
-            逐个原子看
-          </button>
+            {t("逐个原子看")}</button>
         </div>
       )}
 
       {hasAtoms && (
         <div className="bd-lw-panel" role="tabpanel" hidden={page !== 'diagram'}>
-          {dense && <p className="bd-hint">这张结构比较密，可以左右滑动查看，或切到「逐个原子看」。</p>}
+          {dense && <p className="bd-hint">{t("这张结构比较密，可以左右滑动查看，或切到「逐个原子看」。")}</p>}
           <figure className="bd-lw-figure">
             <div className={dense ? 'bd-lw-stage is-dense' : 'bd-lw-stage'} tabIndex={dense ? 0 : undefined}>
               <LewisSvg atoms={atoms} bonds={bonds} total={total} label={svgLabel} />
@@ -404,10 +405,8 @@ export function LewisCard({ block }: { block: any }) {
           </figure>
           <p className="bd-lw-legend" aria-hidden="true">
             <span className="bd-lw-key bd-lw-key-pair" />
-            孤电子对
-            <span className="bd-lw-key bd-lw-key-single" />
-            未成对电子
-          </p>
+            {t("孤电子对")}<span className="bd-lw-key bd-lw-key-single" />
+            {t("未成对电子")}</p>
         </div>
       )}
 
@@ -429,7 +428,7 @@ export function LewisCard({ block }: { block: any }) {
           </ul>
           {total !== 0 && (
             <p className="bd-lw-total">
-              整体带电荷 <strong>{fmtCharge(total)}</strong>
+              {t("整体带电荷")}<strong>{fmtCharge(total)}</strong>
             </p>
           )}
           {caption && <p className="bd-lw-caption">{caption}</p>}
@@ -440,7 +439,7 @@ export function LewisCard({ block }: { block: any }) {
 
       {audit && (
         <p className="bd-foot">
-          {!/^电子/.test(audit) && <span className="bd-foot-label">电子计数</span>}
+          {!/^电子/.test(audit) && <span className="bd-foot-label">{t("电子计数")}</span>}
           {audit}
         </p>
       )}
@@ -451,8 +450,9 @@ export function LewisCard({ block }: { block: any }) {
 /* ───────── 3. 概念图卡片 ───────── */
 
 export function ConceptMapCard({ block }: { block: any }) {
+  React.useContext(LanguageContext);
   const titleId = React.useId();
-  const title = str(block?.title).trim() || '概念图';
+  const title = str(block?.title).trim() || t("概念图");
   const center = str(block?.center).trim() || title;
   const branches = arr(block?.branches)
     .map((b) => ({
@@ -466,10 +466,10 @@ export function ConceptMapCard({ block }: { block: any }) {
 
   return (
     <section className="bd-card bd-cm" aria-labelledby={titleId}>
-      <CardHead kicker="概念" title={title} id={titleId} />
+      <CardHead kicker={t("概念")} title={title} id={titleId} />
 
       <div className="bd-cm-center">
-        <span className="bd-cm-center-tag">核心</span>
+        <span className="bd-cm-center-tag">{t("核心")}</span>
         <strong className="bd-cm-center-text">
           <RichText text={center} />
         </strong>

@@ -65,10 +65,10 @@ private enum InkMark {
 
     static func label(_ name: String) -> String {
         switch name {
-        case "green": return "绿色"
-        case "blue": return "蓝色"
-        case "pink": return "粉色"
-        default: return "黄色"
+        case "green": return L("绿色")
+        case "blue": return L("蓝色")
+        case "pink": return L("粉色")
+        default: return L("黄色")
         }
     }
 }
@@ -79,14 +79,14 @@ private enum LibraryFilters {
 
 private enum DocMeta {
     static func kindLabel(_ doc: ReaderDocument) -> String {
-        if doc.isWelcome { return "指南" }
+        if doc.isWelcome { return L("指南") }
         switch doc.kind {
         case "pdf": return "PDF"
         case "epub": return "EPUB"
-        case "html": return "网页"
+        case "html": return L("网页")
         case "markdown": return "Markdown"
-        case "text": return "文本"
-        default: return "文档"
+        case "text": return L("文本")
+        default: return L("文档")
         }
     }
 
@@ -103,16 +103,16 @@ private enum DocMeta {
     }
 
     static func origin(_ doc: ReaderDocument) -> String {
-        if doc.isWelcome { return "伴读" }
+        if doc.isWelcome { return L("伴读") }
         if let source = doc.sourceURL, let host = URL(string: source)?.host, !host.isEmpty {
             return host.hasPrefix("www.") ? String(host.dropFirst(4)) : host
         }
-        return "本地文件"
+        return L("本地文件")
     }
 
     static func progressText(_ progress: Double) -> String {
-        if progress <= 0.005 { return "未读" }
-        if progress >= 0.99 { return "读完" }
+        if progress <= 0.005 { return L("未读") }
+        if progress >= 0.99 { return L("读完") }
         return "\(Int((progress * 100).rounded()))%"
     }
 
@@ -122,24 +122,26 @@ private enum DocMeta {
 
     private static let relative: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.locale = AppLanguage.locale
         formatter.unitsStyle = .short
         return formatter
     }()
 
     private static let day: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "M月d日"
+        formatter.locale = AppLanguage.locale
+        formatter.locale=AppLanguage.locale; formatter.setLocalizedDateFormatFromTemplate("MMMd")
         return formatter
     }()
 
     static func when(_ date: Date) -> String {
-        relative.localizedString(for: date, relativeTo: Date())
+        relative.locale=AppLanguage.locale;day.locale=AppLanguage.locale;day.setLocalizedDateFormatFromTemplate("MMMd")
+        return relative.localizedString(for: date, relativeTo: Date())
     }
 
     static func shortDate(_ date: Date) -> String {
-        day.string(from: date)
+        day.locale=AppLanguage.locale;day.setLocalizedDateFormatFromTemplate("MMMd")
+        return day.string(from: date)
     }
 }
 
@@ -165,13 +167,13 @@ struct ContentView: View {
                 if sidebarVisible {
                     LibrarySidebar(model: model, palette: palette)
                         .frame(width: widths.library)
-                    resizeHandle(.library, title: "书房宽度", width: widths.library, total: total, right: right, palette: palette)
+                    resizeHandle(.library, title: L("书房宽度"), width: widths.library, total: total, right: right, palette: palette)
                 }
                 ReaderColumn(model: model, palette: palette, sidebarVisible: $sidebarVisible)
                     .frame(width: widths.reader)
                     .frame(maxHeight: .infinity)
                 if let right {
-                    resizeHandle(right, title: model.slideEditing ? "课件工具宽度" : (model.showTutor ? "老师宽度" : "批注宽度"), width: widths.right, total: total, right: right, palette: palette)
+                    resizeHandle(right, title: model.slideEditing ? L("课件工具宽度") : (model.showTutor ? L("老师宽度") : L("批注宽度")), width: widths.right, total: total, right: right, palette: palette)
                     Group { if model.slideEditing { SlideInspector(model:model) } else if model.showTutor { TeacherPanel(model:model) } else { NotesInspector(model: model, palette: palette) } }
                         .frame(width: widths.right)
                 }
@@ -182,7 +184,7 @@ struct ContentView: View {
         .background(palette.background)
         .preferredColorScheme(palette.isDark ? .dark : .light)
         .tint(palette.accent)
-        .navigationTitle(model.selectedDocument?.title ?? "伴读")
+        .navigationTitle(model.selectedDocument?.title ?? L("伴读"))
         .sheet(isPresented: $model.showSettings) {
             SettingsSheet(model: model, palette: palette)
                 .preferredColorScheme(palette.isDark ? .dark : .light)
@@ -197,15 +199,15 @@ struct ContentView: View {
         .onChange(of: model.theme) { _ in model.saveSettings() }
         .onChange(of: model.fontSize) { _ in model.saveSettings() }
         .onChange(of: model.autoSync) { _ in model.saveSettings() }
-        .alert("出了点问题", isPresented: errorBinding) {
-            Button("好") { model.errorMessage = nil }
+        .alert(L("出了点问题"), isPresented: errorBinding) {
+            Button(L("好")) { model.errorMessage = nil }
         } message: {
             Text(model.errorMessage ?? "")
         }
     }
 
     private func resizeHandle(_ pane: PaneLayout.Pane, title: String, width: CGFloat, total: CGFloat, right: PaneLayout.Pane?, palette: ShiyePalette) -> some View {
-        PaneDivider(lineColor: palette.hairline, accentColor: palette.accent, label: title, valueDescription: "\(Int(width)) 点", accessibilityDirection: pane == .library ? 1 : -1,
+        PaneDivider(lineColor: palette.hairline, accentColor: palette.accent, label: title, valueDescription: L("{0} 点", String(describing: Int(width))), accessibilityDirection: pane == .library ? 1 : -1,
             onDelta: { delta in
                 layout.adjust(pane, by: pane == .library ? delta : -delta, total: total, libraryVisible: sidebarVisible, right: right)
             }, onReset: { layout.reset(pane) }, onDragEnded: { layout.save() })
@@ -242,8 +244,8 @@ private struct LibrarySidebar: View {
             SidebarSearchField(text: $model.search, palette: palette)
                 .padding(.horizontal, 12)
                 .padding(.bottom, 8)
-            Picker("筛选", selection: $model.filter) {
-                ForEach(LibraryFilters.all, id: \.self) { Text($0).tag($0) }
+            Picker(L("筛选"), selection: $model.filter) {
+                ForEach(LibraryFilters.all, id: \.self) { Text(L($0)).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -265,17 +267,17 @@ private struct SidebarHeader: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text("伴读")
-                .font(.system(size: 20, weight: .semibold, design: .serif))
-                .foregroundColor(palette.ink)
-            Text("本地书房")
-                .font(.system(size: 11))
-                .foregroundColor(palette.tertiary)
+            VStack(alignment:.leading,spacing:2) {
+                Text(L("伴读"))
+                    .font(.system(size:20,weight:.semibold,design:.serif))
+                    .foregroundColor(palette.ink).lineLimit(1).minimumScaleFactor(0.8)
+                Text(L("本地书房")).font(.system(size:11)).foregroundColor(palette.tertiary)
+            }
             Spacer(minLength: 4)
-            ToolIcon(symbol: "link", help: "保存网页文章", palette: palette) {
+            ToolIcon(symbol: "link", help: L("保存网页文章"), palette: palette) {
                 model.showURLImport = true
             }
-            ToolIcon(symbol: "plus", help: "导入文件 (⌘O)", palette: palette) {
+            ToolIcon(symbol: "plus", help: L("导入文件 (⌘O)"), palette: palette) {
                 model.importFiles()
             }
         }
@@ -295,7 +297,7 @@ private struct SidebarSearchField: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(palette.tertiary)
-            TextField("搜索标题", text: $text)
+            TextField(L("搜索标题"), text: $text)
                 .textFieldStyle(.plain)
                 .font(.system(size: 12.5))
                 .foregroundColor(palette.ink)
@@ -306,7 +308,7 @@ private struct SidebarSearchField: View {
                         .foregroundColor(palette.tertiary)
                 }
                 .buttonStyle(.plain)
-                .help("清除搜索")
+                .help(L("清除搜索"))
             }
         }
         .padding(.horizontal, 8)
@@ -358,7 +360,7 @@ private struct DocumentRow: View {
                     .foregroundColor(selected ? palette.accent : palette.tertiary)
                     .frame(width: 16, height: 18)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(doc.title.isEmpty ? "未命名" : doc.title)
+                    Text(doc.title.isEmpty ? L("未命名") : doc.title)
                         .font(.system(size: 13, weight: selected ? .semibold : .regular))
                         .foregroundColor(palette.ink)
                         .lineLimit(2)
@@ -429,8 +431,8 @@ private struct LibraryEmptyState: View {
                 .fixedSize(horizontal: false, vertical: true)
             if showsImport {
                 HStack(spacing: 8) {
-                    Button("导入文件") { model.importFiles() }
-                    Button("保存网页") { model.showURLImport = true }
+                    Button(L("导入文件")) { model.importFiles() }
+                    Button(L("保存网页")) { model.showURLImport = true }
                 }
                 .controlSize(.small)
                 .padding(.top, 4)
@@ -450,21 +452,21 @@ private struct LibraryEmptyState: View {
     }
 
     private var title: String {
-        if searching { return "没有找到“\(query)”" }
-        if model.library.isEmpty { return "书房还是空的" }
+        if searching { return L("没有找到“{0}”", String(describing: query)) }
+        if model.library.isEmpty { return L("书房还是空的") }
         switch model.filter {
-        case "未读": return "没有未读的文档"
-        case "读完": return "还没有读完的文档"
-        case "归档": return "归档是空的"
-        default: return "这里没有文档"
+        case "未读": return L("没有未读的文档")
+        case "读完": return L("还没有读完的文档")
+        case "归档": return L("归档是空的")
+        default: return L("这里没有文档")
         }
     }
 
     private var detail: String {
-        if searching { return "换个关键词，或切换到“全部”。" }
-        if model.library.isEmpty { return "导入 PDF、EPUB、Markdown 或文本文件，也可以保存一篇网页文章。" }
-        if model.filter == "归档" { return "不想再出现在书房里的文档，可以从“更多”菜单归档。" }
-        return "切换到“全部”查看其他文档。"
+        if searching { return L("换个关键词，或切换到“全部”。") }
+        if model.library.isEmpty { return L("导入 PDF、EPUB、Markdown 或文本文件，也可以保存一篇网页文章。") }
+        if model.filter == "归档" { return L("不想再出现在书房里的文档，可以从“更多”菜单归档。") }
+        return L("切换到“全部”查看其他文档。")
     }
 }
 
@@ -488,11 +490,11 @@ private struct SidebarFooter: View {
                     .truncationMode(.tail)
             }
             Spacer(minLength: 4)
-            ToolIcon(symbol: "arrow.triangle.2.circlepath", help: "立即同步到 Obsidian", palette: palette) {
+            ToolIcon(symbol: "arrow.triangle.2.circlepath", help: L("立即同步到 Obsidian"), palette: palette) {
                 model.syncNow()
             }
             .disabled(model.vaultPath.isEmpty || model.busy)
-            ToolIcon(symbol: "gearshape", help: "设置", palette: palette) {
+            ToolIcon(symbol: "gearshape", help: L("设置"), palette: palette) {
                 model.showSettings = true
             }
         }
@@ -502,9 +504,9 @@ private struct SidebarFooter: View {
     }
 
     private var syncLine: String {
-        if model.vaultPath.isEmpty { return "未连接 · 在设置中选择库" }
+        if model.vaultPath.isEmpty { return L("未连接 · 在设置中选择库") }
         if !model.syncStatus.isEmpty { return model.syncStatus }
-        return model.autoSync ? "自动同步已开启" : "手动同步"
+        return model.autoSync ? L("自动同步已开启") : L("手动同步")
     }
 }
 
@@ -579,14 +581,14 @@ private struct TitleRow: View {
     }
 
     private var title: String {
-        guard let doc = model.selectedDocument else { return "伴读" }
-        return doc.title.isEmpty ? "未命名" : doc.title
+        guard let doc = model.selectedDocument else { return L("伴读") }
+        return doc.title.isEmpty ? L("未命名") : doc.title
     }
 
     private var subtitle: String {
-        guard let doc = model.selectedDocument else { return "选择一份文档开始阅读" }
+        guard let doc = model.selectedDocument else { return L("选择一份文档开始阅读") }
         var parts = [DocMeta.kindLabel(doc), DocMeta.origin(doc)]
-        if doc.archived { parts.append("已归档") }
+        if doc.archived { parts.append(L("已归档")) }
         return parts.joined(separator: " · ")
     }
 }
@@ -612,7 +614,7 @@ private struct ReadingPosition: View {
         .font(.system(size: 11.5))
         .foregroundColor(palette.secondary)
         .fixedSize()
-        .help("阅读位置")
+        .help(L("阅读位置"))
     }
 }
 
@@ -625,14 +627,14 @@ private struct ToolRow: View {
     var body: some View {
         let hasDocument = model.selectedDocument != nil
         HStack(spacing: 8) {
-            ToolIcon(symbol: "sidebar.left", help: sidebarVisible ? "隐藏书房" : "显示书房", active: sidebarVisible, palette: palette) {
+            ToolIcon(symbol: "sidebar.left", help: sidebarVisible ? L("隐藏书房") : L("显示书房"), active: sidebarVisible, palette: palette) {
                 sidebarVisible.toggle()
             }
             ToolSeparator(palette: palette)
             HighlightControl(model: model, palette: palette)
                 .disabled(!hasDocument)
             ToolSeparator(palette: palette)
-            ToolIcon(symbol: "magnifyingglass", help: "在本文中查找 (⌘F)", active: showFind, palette: palette) {
+            ToolIcon(symbol: "magnifyingglass", help: L("在本文中查找 (⌘F)"), active: showFind, palette: palette) {
                 showFind.toggle()
             }
             .keyboardShortcut("f")
@@ -645,10 +647,10 @@ private struct ToolRow: View {
             // 插入位置：FontSizeControl 之后、Spacer(minLength: 6) 之前
             ToolSeparator(palette: palette)
             if model.selectedDocument?.kind == "pdf" {
-                ToolIcon(symbol: "pencil.tip.crop.circle", help: "在课件上编辑批注、新增讲解页并导出 PDF", active: model.slideEditing, palette: palette) {
+                ToolIcon(symbol: "pencil.tip.crop.circle", help: L("在课件上编辑批注、新增讲解页并导出 PDF"), active: model.slideEditing, palette: palette) {
                     if model.slideEditing { model.slideEditing=false } else { model.enterSlideEditing() }
                 }
-                ToolIcon(symbol: "viewfinder", help: model.boxSelection ? "退出框图" : "框图：在 PDF 上框出公式、图表或段落", active: model.boxSelection, palette: palette) {
+                ToolIcon(symbol: "viewfinder", help: model.boxSelection ? L("退出框图") : L("框图：在 PDF 上框出公式、图表或段落"), active: model.boxSelection, palette: palette) {
                     if model.boxSelection { model.boxSelection=false } else { model.startBoxSelection() }
                 }
                 .disabled(!hasDocument)
@@ -656,7 +658,7 @@ private struct ToolRow: View {
             Button {
                 model.askTeacher()
             } label: {
-                Label("问老师", systemImage: "graduationcap")
+                Label(L("问老师"), systemImage: "graduationcap")
                     .labelStyle(.titleAndIcon)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(palette.accent)
@@ -665,9 +667,9 @@ private struct ToolRow: View {
                     .background(palette.accentSoft, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
             }
             .buttonStyle(.plain)
-            .help("问老师：讲解当前选区，没有选区时讲当前页/文章")
+            .help(L("问老师：讲解当前选区，没有选区时讲当前页/文章"))
             .disabled(!hasDocument)
-            ToolIcon(symbol: "person.crop.rectangle", help: model.showTutor ? "收起老师" : "打开老师", active: model.showTutor && model.showNotes, palette: palette) {
+            ToolIcon(symbol: "person.crop.rectangle", help: model.showTutor ? L("收起老师") : L("打开老师"), active: model.showTutor && model.showNotes, palette: palette) {
                 model.showTutor.toggle()
                 model.showNotes = true
             }
@@ -675,7 +677,7 @@ private struct ToolRow: View {
             ThemeMenu(model: model)
             ToolSeparator(palette: palette)
             MoreMenu(model: model)
-            ToolIcon(symbol: "sidebar.right", help: model.showNotes ? "隐藏笔记" : "显示笔记", active: model.showNotes, palette: palette) {
+            ToolIcon(symbol: "sidebar.right", help: model.showNotes ? L("隐藏笔记") : L("显示笔记"), active: model.showNotes, palette: palette) {
                 model.showNotes.toggle()
             }
         }
@@ -755,7 +757,7 @@ private struct HighlightControl: View {
             Button { model.addHighlight() } label: {
                 HStack(spacing: 5) {
                     Image(systemName: "highlighter")
-                    Text("划线")
+                    Text(L("划线"))
                 }
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(canMark ? palette.ink : palette.tertiary)
@@ -770,7 +772,7 @@ private struct HighlightControl: View {
             .buttonStyle(.plain)
             .disabled(!canMark)
             .keyboardShortcut("h", modifiers: [.command, .shift])
-            .help(canMark ? "为选中的文字划线 (⇧⌘H)" : "先在正文中选中一段文字")
+            .help(canMark ? L("为选中的文字划线 (⇧⌘H)") : L("先在正文中选中一段文字"))
             HStack(spacing: 0) {
                 ForEach(InkMark.all, id: \.self) { name in
                     ColorDot(name: name, selected: model.highlightColor == name, size: 10, palette: palette) {
@@ -789,7 +791,7 @@ private struct FontSizeControl: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            ToolIcon(symbol: "textformat.size.smaller", help: "缩小字号 (⌘-)", palette: palette) {
+            ToolIcon(symbol: "textformat.size.smaller", help: L("缩小字号 (⌘-)"), palette: palette) {
                 model.readerZoom(-1)
             }
             .keyboardShortcut("-")
@@ -797,8 +799,8 @@ private struct FontSizeControl: View {
                 .font(.system(size: 11.5).monospacedDigit())
                 .foregroundColor(palette.secondary)
                 .frame(width: 22)
-                .help("字号")
-            ToolIcon(symbol: "textformat.size.larger", help: "放大字号 (⌘=)", palette: palette) {
+                .help(L("字号"))
+            ToolIcon(symbol: "textformat.size.larger", help: L("放大字号 (⌘=)"), palette: palette) {
                 model.readerZoom(1)
             }
             .keyboardShortcut("=")
@@ -811,17 +813,17 @@ private struct ThemeMenu: View {
 
     var body: some View {
         Menu {
-            Picker("阅读主题", selection: $model.theme) {
-                ForEach(ShiyePalette.themes, id: \.self) { Text($0).tag($0) }
+            Picker(L("阅读主题"), selection: $model.theme) {
+                ForEach(ShiyePalette.themes, id: \.self) { Text(L($0)).tag($0) }
             }
             .pickerStyle(.inline)
         } label: {
-            Label(model.theme, systemImage: "circle.lefthalf.filled")
+            Label(L(model.theme), systemImage: "circle.lefthalf.filled")
                 .font(.system(size: 12))
         }
         .menuStyle(.borderlessButton)
         .fixedSize()
-        .help("阅读主题")
+        .help(L("阅读主题"))
     }
 }
 
@@ -831,23 +833,23 @@ private struct MoreMenu: View {
     var body: some View {
         let doc = model.selectedDocument
         Menu {
-            Button(doc?.sourceURL == nil ? "打开原文件" : "打开原网页") { model.openSource() }
+            Button(doc?.sourceURL == nil ? L("打开原文件") : L("打开原网页")) { model.openSource() }
                 .disabled(doc == nil || doc?.isWelcome == true)
-            Button(doc?.archived == true ? "移出归档" : "归档") { model.archiveSelected() }
+            Button(doc?.archived == true ? L("移出归档") : L("归档")) { model.archiveSelected() }
                 .disabled(doc == nil)
             Divider()
-            Button("同步到 Obsidian") { model.syncNow() }
+            Button(L("同步到 Obsidian")) { model.syncNow() }
                 .disabled(model.vaultPath.isEmpty)
-            Button("在访达中显示资料") { model.revealDataFolder() }
+            Button(L("在访达中显示资料")) { model.revealDataFolder() }
             Divider()
-            Button("设置…") { model.showSettings = true }
+            Button(L("设置…")) { model.showSettings = true }
         } label: {
             Image(systemName: "ellipsis.circle")
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .fixedSize()
-        .help("更多")
+        .help(L("更多"))
     }
 }
 
@@ -862,15 +864,15 @@ private struct FindPopover: View {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
-                TextField("在本文中查找", text: $query)
+                TextField(L("在本文中查找"), text: $query)
                     .textFieldStyle(.roundedBorder)
                     .focused($focused)
                     .onSubmit { run() }
                     .frame(width: 200)
-                Button("查找") { run() }
+                Button(L("查找")) { run() }
                     .disabled(trimmed.isEmpty)
             }
-            Text("按回车跳到下一处")
+            Text(L("按回车跳到下一处"))
                 .font(.system(size: 11))
                 .foregroundColor(.secondary)
         }
@@ -894,23 +896,23 @@ private struct ReaderPlaceholder: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Text("伴读")
+            Text(L("伴读"))
                 .font(.system(size: 34, weight: .regular, design: .serif))
                 .foregroundColor(palette.ink)
-            Text(model.library.isEmpty ? "拾起每一页值得细读的文字。" : "从左侧书房选择一份文档，继续读下去。")
+            Text(model.library.isEmpty ? L("拾起每一页值得细读的文字。") : L("从左侧书房选择一份文档，继续读下去。"))
                 .font(.system(size: 14, design: .serif))
                 .foregroundColor(palette.secondary)
             HStack(spacing: 10) {
                 Button { model.importFiles() } label: {
-                    Label("导入文件", systemImage: "doc.badge.plus")
+                    Label(L("导入文件"), systemImage: "doc.badge.plus")
                 }
                 Button { model.showURLImport = true } label: {
-                    Label("保存网页文章", systemImage: "link")
+                    Label(L("保存网页文章"), systemImage: "link")
                 }
             }
             .controlSize(.large)
             .padding(.top, 8)
-            Text("文档、划线与笔记都只保存在这台 Mac 上。")
+            Text(L("文档、划线与笔记都只保存在这台 Mac 上。"))
                 .font(.system(size: 11.5))
                 .foregroundColor(palette.tertiary)
                 .padding(.top, 6)
@@ -932,20 +934,20 @@ private struct StatusBar: View {
                     .scaleEffect(0.6)
                     .frame(width: 12, height: 12)
             }
-            Text(model.status.isEmpty ? "就绪" : model.status)
+            Text(model.status.isEmpty ? L("就绪") : model.status)
                 .lineLimit(1)
                 .truncationMode(.tail)
             Spacer(minLength: 8)
             if model.totalHighlights > 0 {
-                Text("共 \(model.totalHighlights) 条划线")
+                Text(L("共 {0} 条划线", String(describing: model.totalHighlights)))
                     .monospacedDigit()
             }
             HStack(spacing: 4) {
                 Image(systemName: "lock")
                     .font(.system(size: 9.5))
-                Text("本地保存")
+                Text(L("本地保存"))
             }
-            .help("所有内容只保存在这台 Mac 上")
+            .help(L("所有内容只保存在这台 Mac 上"))
         }
         .font(.system(size: 11))
         .foregroundColor(palette.tertiary)
@@ -963,10 +965,10 @@ private struct NotesInspector: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Picker("笔记类型", selection: $model.showStudyNotes) {
-                Text("学习笔记").tag(true)
-                Text("划线批注").tag(false)
-            }.pickerStyle(.segmented).padding(10)
+            Picker(L("笔记类型"), selection: $model.showStudyNotes) {
+                Text(L("学习笔记")).tag(true)
+                Text(L("划线批注")).tag(false)
+            }.pickerStyle(.segmented).labelsHidden().padding(10)
             if model.showStudyNotes { StudyNotesView(model: model, compact: true) }
             else { annotations }
         }.background(palette.sidebar)
@@ -1015,18 +1017,18 @@ private struct NotesHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(alignment: .firstTextBaseline) {
-                Text("笔记")
+                Text(L("笔记"))
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(palette.ink)
                 Spacer()
                 if hasDocument {
-                    Text("\(count) 条划线")
+                    Text(L("{0} 条划线", String(describing: count)))
                         .font(.system(size: 11.5))
                         .monospacedDigit()
                         .foregroundColor(palette.secondary)
                 }
             }
-            Text("选中文字后按 ⇧⌘H 划线 · 笔记自动保存")
+            Text(L("选中文字后按 ⇧⌘H 划线 · 笔记自动保存"))
                 .font(.system(size: 11))
                 .foregroundColor(palette.tertiary)
                 .lineLimit(1)
@@ -1045,12 +1047,12 @@ private struct NotesEmptyState: View {
             Image(systemName: "highlighter")
                 .font(.system(size: 22, weight: .light))
                 .foregroundColor(palette.tertiary)
-            Text(hasDocument ? "还没有划线" : "没有打开的文档")
+            Text(hasDocument ? L("还没有划线") : L("没有打开的文档"))
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(palette.secondary)
             Text(hasDocument
-                 ? "在正文中选中一段文字，按 ⇧⌘H 或点击“划线”。\n划线和你的想法会收在这里，也可以同步到 Obsidian。"
-                 : "打开一份文档后，这里会收集你的划线与想法。")
+                 ? L("在正文中选中一段文字，按 ⇧⌘H 或点击“划线”。\n划线和你的想法会收在这里，也可以同步到 Obsidian。")
+                 : L("打开一份文档后，这里会收集你的划线与想法。"))
                 .font(.system(size: 11.5))
                 .foregroundColor(palette.tertiary)
                 .multilineTextAlignment(.center)
@@ -1110,15 +1112,15 @@ private struct HighlightCard: View {
         .onChange(of: tags) { _ in scheduleSave() }
         .onChange(of: focus) { _ in commit() }
         .onDisappear { commit() }
-        .confirmationDialog("删除这条划线？", isPresented: $confirmDelete) {
-            Button("删除", role: .destructive) {
+        .confirmationDialog(L("删除这条划线？"), isPresented: $confirmDelete) {
+            Button(L("删除"), role: .destructive) {
                 deleted = true
                 saveTask?.cancel()
                 model.deleteHighlight(highlight.id)
             }
-            Button("取消", role: .cancel) {}
+            Button(L("取消"), role: .cancel) {}
         } message: {
-            Text("划线和它的笔记会一起删除，无法撤销。")
+            Text(L("划线和它的笔记会一起删除，无法撤销。"))
         }
     }
 
@@ -1141,7 +1143,7 @@ private struct HighlightCard: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("回到原文位置")
+        .help(L("回到原文位置"))
     }
 
     private var fieldFill: Color {
@@ -1158,7 +1160,7 @@ private struct HighlightCard: View {
                 .padding(.horizontal, 3)
                 .padding(.vertical, 5)
             if note.isEmpty {
-                Text("写下想法…")
+                Text(L("写下想法…"))
                     .font(.system(size: 12.5))
                     .foregroundColor(palette.tertiary)
                     .padding(.horizontal, 8)
@@ -1179,7 +1181,7 @@ private struct HighlightCard: View {
             Image(systemName: "number")
                 .font(.system(size: 10.5, weight: .medium))
                 .foregroundColor(palette.tertiary)
-            TextField("标签，用空格分隔", text: $tags)
+            TextField(L("标签，用空格分隔"), text: $tags)
                 .textFieldStyle(.plain)
                 .font(.system(size: 12))
                 .foregroundColor(palette.ink)
@@ -1210,10 +1212,10 @@ private struct HighlightCard: View {
                 .monospacedDigit()
                 .foregroundColor(palette.tertiary)
                 .lineLimit(1)
-            ToolIcon(symbol: "arrow.uturn.backward", help: "回到原文", palette: palette) {
+            ToolIcon(symbol: "arrow.uturn.backward", help: L("回到原文"), palette: palette) {
                 model.goToHighlight(highlight)
             }
-            ToolIcon(symbol: "trash", help: "删除划线", palette: palette) {
+            ToolIcon(symbol: "trash", help: L("删除划线"), palette: palette) {
                 confirmDelete = true
             }
         }
@@ -1221,7 +1223,7 @@ private struct HighlightCard: View {
 
     private var meta: String {
         var parts: [String] = []
-        if let page = highlight.page { parts.append("第 \(page + 1) 页") }
+        if let page = highlight.page { parts.append(L("第 {0} 页", String(describing: page + 1))) }
         parts.append(DocMeta.shortDate(highlight.createdAt))
         return parts.joined(separator: " · ")
     }
@@ -1277,24 +1279,37 @@ private struct SettingsSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("设置")
+            Text(L("设置"))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(palette.ink)
                 .padding(.bottom, 18)
-            SettingsSection(title: "OBSIDIAN 同步", palette: palette) {
+            SettingsSection(title: "语言 / Language", palette: palette) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Picker(L("语言"), selection: Binding(get:{model.language},set:{model.setLanguage($0)})) {
+                        Text(L("跟随系统")).tag("system")
+                        Text("中文").tag("zh")
+                        Text("English").tag("en")
+                    }
+                    .pickerStyle(.segmented).labelsHidden()
+                    Text(L("界面和新讲解使用所选语言；已有课件、笔记与对话保留原文。"))
+                        .font(.system(size:11.5)).foregroundColor(palette.secondary)
+                        .fixedSize(horizontal:false,vertical:true)
+                }
+            }
+            SettingsSection(title: L("OBSIDIAN 同步"), palette: palette) {
                 VaultSettings(model: model, palette: palette)
             }
-            SettingsSection(title: "本地数据", palette: palette) {
+            SettingsSection(title: L("本地数据"), palette: palette) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 8) {
                         Button { model.exportBackup() } label: {
-                            Label("导出备份…", systemImage: "archivebox")
+                            Label(L("导出备份…"), systemImage: "archivebox")
                         }
                         Button { model.revealDataFolder() } label: {
-                            Label("在访达中显示", systemImage: "folder")
+                            Label(L("在访达中显示"), systemImage: "folder")
                         }
                     }
-                    Text("阅读和笔记保存在这台 Mac 上。问老师时，相关文字与图片会发给所选模型，使用现有订阅额度。保存网页时会下载文章。")
+                    Text(L("阅读和笔记保存在这台 Mac 上。问老师时，相关文字与图片会发给所选模型，使用现有订阅额度。保存网页时会下载文章。"))
                         .font(.system(size: 11.5))
                         .foregroundColor(palette.secondary)
                         .lineSpacing(2)
@@ -1303,7 +1318,7 @@ private struct SettingsSheet: View {
             }
             HStack {
                 Spacer()
-                Button("完成") { model.showSettings = false }
+                Button(L("完成")) { model.showSettings = false }
                     .keyboardShortcut(.defaultAction)
             }
             .padding(.top, 4)
@@ -1324,26 +1339,26 @@ private struct VaultSettings: View {
             HStack(spacing: 8) {
                 Image(systemName: "folder")
                     .foregroundColor(palette.tertiary)
-                Text(model.vaultPath.isEmpty ? "尚未选择 Obsidian 库" : model.vaultPath)
+                Text(model.vaultPath.isEmpty ? L("尚未选择 Obsidian 库") : model.vaultPath)
                     .font(.system(size: 12))
                     .foregroundColor(model.vaultPath.isEmpty ? palette.tertiary : palette.ink)
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .textSelection(.enabled)
                 Spacer(minLength: 8)
-                Button(model.vaultPath.isEmpty ? "选择库…" : "更换…") { model.chooseVault() }
+                Button(model.vaultPath.isEmpty ? L("选择库…") : L("更换…")) { model.chooseVault() }
             }
-            Toggle("划线或修改笔记后自动同步", isOn: $model.autoSync)
+            Toggle(L("划线或修改笔记后自动同步"), isOn: $model.autoSync)
                 .toggleStyle(.checkbox)
                 .disabled(model.vaultPath.isEmpty)
             HStack(alignment: .center, spacing: 8) {
-                Text(model.syncStatus.isEmpty ? "划线与笔记会以 Markdown 文件写入所选的库。" : model.syncStatus)
+                Text(model.syncStatus.isEmpty ? L("划线与笔记会以 Markdown 文件写入所选的库。") : model.syncStatus)
                     .font(.system(size: 11.5))
                     .foregroundColor(palette.secondary)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 8)
-                Button("立即同步") { model.syncNow() }
+                Button(L("立即同步")) { model.syncNow() }
                     .disabled(model.vaultPath.isEmpty || model.busy)
             }
         }
@@ -1365,10 +1380,10 @@ private struct URLImportSheet: View {
                     .foregroundColor(palette.accent)
                     .frame(width: 22, height: 22)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("保存网页文章")
+                    Text(L("保存网页文章"))
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(palette.ink)
-                    Text("伴读会提取正文并保存在本地，之后离线也能阅读和划线。")
+                    Text(L("伴读会提取正文并保存在本地，之后离线也能阅读和划线。"))
                         .font(.system(size: 12))
                         .foregroundColor(palette.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -1382,7 +1397,7 @@ private struct URLImportSheet: View {
                 .disabled(working)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Image(systemName: "info.circle")
-                Text("仅适用于公开文章。需要登录或付费才能查看的页面无法读取。")
+                Text(L("仅适用于公开文章。需要登录或付费才能查看的页面无法读取。"))
                     .fixedSize(horizontal: false, vertical: true)
             }
             .font(.system(size: 11.5))
@@ -1391,14 +1406,14 @@ private struct URLImportSheet: View {
                 if working {
                     ProgressView()
                         .controlSize(.small)
-                    Text("正在保存…")
+                    Text(L("正在保存…"))
                         .font(.system(size: 12))
                         .foregroundColor(palette.secondary)
                 }
                 Spacer()
-                Button("取消") { model.showURLImport = false }
+                Button(L("取消")) { model.showURLImport = false }
                     .keyboardShortcut(.cancelAction)
-                Button("保存") { submit() }
+                Button(L("保存")) { submit() }
                     .keyboardShortcut(.defaultAction)
                     .disabled(!canSubmit)
             }

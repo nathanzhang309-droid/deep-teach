@@ -33,10 +33,10 @@ import PDFKit
         let rect=view.convert(selected,to:page).intersection(page.bounds(for:.cropBox));guard !rect.isEmpty else{return}
         let screen=view.convert(rect,from:page).intersection(view.bounds);capturing=true;needsDisplay=true;displayIfNeeded()
         guard let bitmap=view.bitmapImageRepForCachingDisplay(in:screen) else{return};view.cacheDisplay(in:screen,to:bitmap);guard let bytes=bitmap.representation(using:.png,properties:[:]) else{return}
-        let i=pdf.index(for:page),quote=page.selection(for:rect)?.string ?? "图表选区"
+        let i=pdf.index(for:page),quote=page.selection(for:rect)?.string ?? L("图表选区")
         let region=PDFRegion(page:i,x:rect.minX,y:rect.minY,width:rect.width,height:rect.height)
-        model.receiveSelection(SelectionAnchor(quote:quote.isEmpty ? "图表选区":quote,regions:[region]))
+        model.receiveSelection(SelectionAnchor(quote:quote.isEmpty ? L("图表选区"):quote,regions:[region]))
         model.selectedImage="data:image/png;base64,"+bytes.base64EncodedString();model.selectedImagePage=i;model.selectedImageRegion=region
-        model.slideEditing=false;model.showTutor=true;model.showNotes=true;model.selectionRequest=UUID();model.tutorStatus="已框选第 \(i+1) 页的区域，想问这部分什么？"
+        model.slideEditing=false;model.showTutor=true;model.showNotes=true;model.selectionRequest=UUID();model.tutorStatus=L("已框选第 {0} 页的区域，想问这部分什么？", String(describing: i+1))
     }
 }

@@ -1,10 +1,11 @@
 {
   "name": "bandu-teacher-panel",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild main.tsx --bundle --minify --format=iife --target=safari16 --loader:.woff=file --loader:.woff2=file --loader:.ttf=file --asset-names=fonts/[name]-[hash] --outfile=../Resources/TeacherUI/main.js"
+    "build": "esbuild main.tsx --bundle --minify --format=iife --target=safari16 --loader:.woff=file --loader:.woff2=file --loader:.ttf=file --asset-names=fonts/[name]-[hash] --outfile=../Resources/TeacherUI/main.js",
+    "test": "esbuild adversarial.test.ts --bundle --platform=node --outfile=../build/tests/frontend.cjs && node ../build/tests/frontend.cjs"
   },
   "dependencies": {
     "react": "19.3.1",

@@ -8,7 +8,7 @@ func markColor(_ name:String)->NSColor {
 }
 struct ReaderSurface:View {
     @ObservedObject var model:AppModel
-    var body:some View{Group{if let d=model.selectedDocument {if d.kind=="pdf"{PDFSurface(model:model,document:d).id(d.id)}else{ArticleSurface(model:model,document:d).id(d.id)}}else{VStack(spacing:12){Image(systemName:"book.closed").font(.system(size:42));Text("选择一篇文档，开始阅读").font(.title3);Button("导入文档"){model.importFiles()}}.frame(maxWidth:.infinity,maxHeight:.infinity)}}}
+    var body:some View{Group{if let d=model.selectedDocument {if d.kind=="pdf"{PDFSurface(model:model,document:d).id(d.id)}else{ArticleSurface(model:model,document:d).id(d.id)}}else{VStack(spacing:12){Image(systemName:"book.closed").font(.system(size:42));Text(L("选择一篇文档，开始阅读")).font(.title3);Button(L("导入文档")){model.importFiles()}}.frame(maxWidth:.infinity,maxHeight:.infinity)}}}
 }
 struct PDFSurface:NSViewRepresentable {
     @ObservedObject var model:AppModel;let document:ReaderDocument
@@ -31,7 +31,7 @@ struct PDFSurface:NSViewRepresentable {
     }
     static func dismantleNSView(_ nsView:PDFView,coordinator:Coordinator){coordinator.observers.forEach{NotificationCenter.default.removeObserver($0)}}
     @MainActor final class Coordinator:NSObject{
-        let model:AppModel;let document:ReaderDocument;weak var view:PDFView?;var observers:[NSObjectProtocol]=[];var annotations:[PDFAnnotation]=[];var revision = -1;var commandID:UUID?;var slideRevision = -1;var basePageCount=0;var slideAnnotations:[PDFAnnotation]=[];weak var editor:SlideOverlay?
+        let model:AppModel;let document:ReaderDocument;weak var view:PDFView?;var observers:[NSObjectProtocol]=[];var annotations:[PDFAnnotation]=[];var revision = -1;var commandID:UUID?;var language=AppLanguage.code;var slideRevision = -1;var basePageCount=0;var slideAnnotations:[PDFAnnotation]=[];weak var editor:SlideOverlay?
         init(model:AppModel,document:ReaderDocument){self.model=model;self.document=document}
         func selection(){guard let v=view,let s=v.currentSelection,let quote=s.string,!quote.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty,let pdf=v.document else{return};var boxes:[PDFRegion]=[]
             for line in s.selectionsByLine(){for page in line.pages{let b=line.bounds(for:page);if !b.isEmpty{boxes.append(PDFRegion(page:pdf.index(for:page),x:b.minX,y:b.minY,width:b.width,height:b.height))}}}
@@ -48,7 +48,7 @@ struct PDFSurface:NSViewRepresentable {
         func paint(){paintSlides();guard let pdf=view?.document else{return};for a in annotations{a.page?.removeAnnotation(a)};annotations=[]
             for h in model.highlights where h.documentID==document.id{for r in h.regions{guard let page=pdf.page(at:r.page) else{continue};let a=PDFAnnotation(bounds:CGRect(x:r.x,y:r.y,width:r.width,height:r.height),forType:.highlight,withProperties:nil);a.color=markColor(h.color);a.contents=h.note.isEmpty ? h.quote:h.note;page.addAnnotation(a);annotations.append(a)}}
         }
-        func pageChanged(){guard let v=view,let pdf=v.document,let page=v.currentPage else{return};let i=pdf.index(for:page);model.pageLabel="\(i+1) / \(pdf.pageCount) 页";model.markProgress(pdf.pageCount>1 ? Double(i)/Double(pdf.pageCount-1):0,page:i);editor?.needsDisplay=true}
+        func pageChanged(){guard let v=view,let pdf=v.document,let page=v.currentPage else{return};let i=pdf.index(for:page);model.pageLabel=L("{0} / {1} 页", String(describing: i+1), String(describing: pdf.pageCount));model.markProgress(pdf.pageCount>1 ? Double(i)/Double(pdf.pageCount-1):0,page:i);editor?.needsDisplay=true}
         func jump(_ id:String){guard let h=model.highlights.first(where:{$0.id==id}) else{return};if let r=h.regions.first,let page=view?.document?.page(at:r.page){view?.go(to:CGRect(x:r.x-20,y:r.y-80,width:r.width+40,height:r.height+160),on:page)}else if let index=h.page,let page=view?.document?.page(at:index){view?.go(to:page)}}
     }
 }
@@ -62,17 +62,18 @@ struct ArticleSurface:NSViewRepresentable {
         return web
     }
     func updateNSView(_ web:WKWebView,context:Context){let c=context.coordinator;guard c.ready else{return}
+        if c.language != AppLanguage.code{c.language=AppLanguage.code;c.call("appearance",html:false)}
         if c.revision != model.readerRevision{c.revision=model.readerRevision;c.update()}
         if c.commandID != model.commandID{c.commandID=model.commandID;let command=model.readerCommand;if command=="jump",let id=model.jumpID{c.eval("window.reader.jump(\((try? jsonText(id)) ?? "null"))")}else if command=="clearSelection"{c.eval("window.reader.clearSelection()")}else if command.hasPrefix("find:"){c.eval("window.reader.find(\((try? jsonText(String(command.dropFirst(5)))) ?? "null"))")}}
     }
     static func dismantleNSView(_ web:WKWebView,coordinator:Coordinator){web.configuration.userContentController.removeScriptMessageHandler(forName:"reader");web.stopLoading()}
     @MainActor final class Coordinator:NSObject,WKScriptMessageHandler,WKNavigationDelegate{
-        let model:AppModel;let document:ReaderDocument;weak var web:WKWebView?;var ready=false;var revision = -1;var commandID:UUID?
+        let model:AppModel;let document:ReaderDocument;weak var web:WKWebView?;var ready=false;var revision = -1;var commandID:UUID?;var language=AppLanguage.code
         init(model:AppModel,document:ReaderDocument){self.model=model;self.document=document}
-        func eval(_ js:String){web?.evaluateJavaScript(js){[weak self] _,error in if let error{self?.model.status="阅读操作未完成：\(error.localizedDescription)"}}}
-        func payload(includeHTML:Bool)->[String:Any]{var p:[String:Any]=["title":document.title,"kind":document.kind,"sourceURL":document.sourceURL ?? "","progress":document.progress,"theme":model.theme,"fontSize":model.fontSize,"jumpID":model.jumpID ?? ""]
+        func eval(_ js:String){web?.evaluateJavaScript(js){[weak self] _,error in if let error{self?.model.status=L("阅读操作未完成：{0}", String(describing: error.localizedDescription))}}}
+        func payload(includeHTML:Bool)->[String:Any]{var p:[String:Any]=["language":AppLanguage.code,"title":document.title,"kind":document.kind,"sourceURL":document.sourceURL ?? "","progress":document.progress,"theme":model.theme,"fontSize":model.fontSize,"jumpID":model.jumpID ?? ""]
             p["highlights"]=(try? JSONSerialization.jsonObject(with:JSONEncoder().encode(model.highlights.filter{$0.documentID==document.id}))) ?? []
-            if includeHTML{p["html"]=(try? String(contentsOf:model.store.url(for:document),encoding:.utf8)) ?? "<p>无法读取本地正文，请从备份恢复。</p>"};return p}
+            if includeHTML{p["html"]=(try? String(contentsOf:model.store.url(for:document),encoding:.utf8)) ?? L("<p>无法读取本地正文，请从备份恢复。</p>")};return p}
         func call(_ method:String,html:Bool){guard let data=try? JSONSerialization.data(withJSONObject:payload(includeHTML:html)),let text=String(data:data,encoding:.utf8) else{return};eval("window.reader.\(method)(\(text))")}
         func update(){call("update",html:false)}
         func userContentController(_ userContentController:WKUserContentController,didReceive message:WKScriptMessage){guard let b=message.body as? [String:Any],let type=b["type"] as? String else{return}
@@ -82,7 +83,7 @@ struct ArticleSurface:NSViewRepresentable {
             case "highlight":model.addHighlight()
             case "progress":if let p=b["value"] as? Double{model.markProgress(p)}
             case "selectedHighlight":if let id=b["id"] as? String{model.selectedHighlightID=id;model.showNotes=true}
-            case "unresolved":model.status="部分批注无法自动定位，原文摘录仍保留在笔记中"
+            case "unresolved":model.status=L("部分批注无法自动定位，原文摘录仍保留在笔记中")
             case "external":if let s=b["url"] as? String,let u=URL(string:s),["https","http"].contains(u.scheme ?? ""){NSWorkspace.shared.open(u)}
             default:break
             }

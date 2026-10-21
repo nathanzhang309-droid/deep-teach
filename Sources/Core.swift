@@ -19,7 +19,7 @@ struct Preferences: Codable {
 struct LibraryState: Codable { var version=1; var documents:[ReaderDocument]=[]; var highlights:[Highlight]=[]; var preferences=Preferences() }
 enum ReaderError: LocalizedError {
     case message(String)
-    var errorDescription:String? { if case .message(let s)=self { return s }; return nil }
+    var errorDescription:String? { if case .message(let s)=self { return L(s) }; return nil }
 }
 func sha256(_ data:Data)->String { SHA256.hash(data:data).map{String(format:"%02x",$0)}.joined() }
 func htmlEscape(_ s:String)->String { s.replacingOccurrences(of:"&",with:"&amp;").replacingOccurrences(of:"<",with:"&lt;").replacingOccurrences(of:">",with:"&gt;").replacingOccurrences(of:"\"",with:"&quot;") }
@@ -39,9 +39,9 @@ final class LibraryStore {
             do { state=try decoder.decode(LibraryState.self,from:Data(contentsOf:file)) }
             catch {
                 if let data=try? Data(contentsOf:backup),let old=try? decoder.decode(LibraryState.self,from:data) {
-                    state=old; recoveryNotice="资料库已从上一次保存恢复。损坏文件已保留。"
+                    state=old; recoveryNotice=L("资料库已从上一次保存恢复。损坏文件已保留。")
                     try fm.copyItem(at:file,to:root.appendingPathComponent("library-damaged-\(newID()).json"))
-                } else { throw ReaderError.message("资料库无法读取，已保留原文件。请从备份恢复：\(file.path)") }
+                } else { throw ReaderError.message(L("资料库无法读取，已保留原文件。请从备份恢复：{0}",file.path)) }
             }
         } else { state=LibraryState() }
         guard state.version == 1 else { throw ReaderError.message("资料库版本较新，请使用匹配版本的伴读。") }
@@ -64,7 +64,7 @@ final class LibraryStore {
         let id=newID(),dir=try folder(id)
         try Data(html.utf8).write(to:dir.appendingPathComponent("article.html"),options:.atomic)
         try Data(text.utf8).write(to:dir.appendingPathComponent("search.txt"),options:.atomic)
-        let d=ReaderDocument(id:id,title:title.isEmpty ? "未命名文档":title,kind:kind,sourceURL:sourceURL,createdAt:Date(),lastOpenedAt:Date(),isWelcome:isWelcome,relativePath:"documents/\(id)/article.html",digest:identity)
+        let d=ReaderDocument(id:id,title:title.isEmpty ? L("未命名文档"):title,kind:kind,sourceURL:sourceURL,createdAt:Date(),lastOpenedAt:Date(),isWelcome:isWelcome,relativePath:"documents/\(id)/article.html",digest:identity)
         state.documents.insert(d,at:0);try save();return d
     }
 }
@@ -80,11 +80,9 @@ final class ObsidianSync {
     func sync(state:LibraryState,vault:URL,studyBlocks:[String:String]=[:])throws->SyncResult {
         var dir:ObjCBool=false
         guard fm.fileExists(atPath:vault.path,isDirectory:&dir),dir.boolValue else { throw ReaderError.message("Obsidian 库文件夹不可用，请在设置中重新选择。") }
-        let output=vault.appendingPathComponent(state.preferences.syncSubfolder ?? Self.legacySubfolder)
-        try fm.createDirectory(at:output,withIntermediateDirectories:true)
-        // Refuse redirecting the dedicated sync subtree through a symbolic link.
-        guard output.resolvingSymlinksInPath().path.hasPrefix(vault.resolvingSymlinksInPath().path+"/") else { throw ReaderError.message("同步目录指向库以外的位置，已停止写入。") }
+        let output=try scopedDirectory(state.preferences.syncSubfolder ?? Self.legacySubfolder, inside:vault)
         let indexURL=output.appendingPathComponent(".shiye-sync.json")
+        try requireRegularTarget(indexURL)
         var index:SyncIndex
         if fm.fileExists(atPath:indexURL.path) {
             do { index=try JSONDecoder().decode(SyncIndex.self,from:Data(contentsOf:indexURL)) }
@@ -97,7 +95,7 @@ final class ObsidianSync {
             let filename=index.entries[d.id]?.filename ?? "\(safeName(d.title)) — \(d.id.prefix(8)).md"
             guard filename == (filename as NSString).lastPathComponent else {throw ReaderError.message("同步索引包含无效路径。")}
             let target=output.appendingPathComponent(filename)
-            guard target.resolvingSymlinksInPath().deletingLastPathComponent()==output.resolvingSymlinksInPath() else {throw ReaderError.message("同步目标不是普通笔记路径。")}
+            try requireRegularTarget(target)
             let begin="<!-- shiye:\(d.id):begin -->",end="<!-- shiye:\(d.id):end -->"
             let block=render(d,marks:marks)+(studyBlocks[d.id].map{"\n\n"+$0} ?? "")
             let hash=sha256(Data(block.utf8))
@@ -118,7 +116,7 @@ final class ObsidianSync {
                     }
                 } else {try writeConflict(d,block:managed,output:output);result.conflicts+=1;continue}
             } else {
-                let fresh="---\nshiye_document: \(d.id)\nsource: 伴读\n---\n\n# \(d.title.replacingOccurrences(of:"\n",with:" "))\n\n\(managed)\n\n## 我的笔记\n\n在这里自由写笔记。此区域会在同步时保留。\n"
+                let fresh="---\nshiye_document: \(d.id)\nsource: 伴读\n---\n\n# \(d.title.replacingOccurrences(of:"\n",with:" "))\n\n\(managed)\n\n## \(L("我的笔记"))\n\n\(L("在这里自由写笔记。此区域会在同步时保留。"))\n"
                 try Data(fresh.utf8).write(to:target,options:.atomic)
             }
             index.entries[d.id]=SyncEntry(documentID:d.id,filename:filename,blockHash:hash);result.written+=1
@@ -128,39 +126,72 @@ final class ObsidianSync {
         try JSONEncoder().encode(index).write(to:indexURL,options:.atomic)
         return result
     }
+    // Validate every ancestor BEFORE creating anything; a failed sync must have no out-of-vault side effects.
+    func scopedDirectory(_ relative:String,inside root:URL)throws->URL {
+        let parts=relative.components(separatedBy:"/")
+        guard !relative.hasPrefix("/"), !parts.isEmpty,
+              parts.allSatisfy({!$0.isEmpty && $0 != "." && $0 != ".." && !$0.contains("\\") && !$0.contains("\0")}) else {
+            throw ReaderError.message("同步目录路径无效，已停止写入。")
+        }
+        let base=root.resolvingSymlinksInPath().standardizedFileURL
+        var target=base
+        for part in parts {
+            target.appendPathComponent(part)
+            if (try? target.resourceValues(forKeys:[.isSymbolicLinkKey]).isSymbolicLink)==true {
+                throw ReaderError.message("同步目录包含符号链接，已停止写入。")
+            }
+        }
+        guard target.resolvingSymlinksInPath().path.hasPrefix(base.path+"/") else {
+            throw ReaderError.message("同步目录指向库以外的位置，已停止写入。")
+        }
+        try fm.createDirectory(at:target,withIntermediateDirectories:true)
+        return target
+    }
+    func requireRegularTarget(_ file:URL)throws {
+        let values=try? file.resourceValues(forKeys:[.isSymbolicLinkKey,.isRegularFileKey])
+        guard values?.isSymbolicLink != true, !fm.fileExists(atPath:file.path) || values?.isRegularFile==true else {
+            throw ReaderError.message("同步目标不是普通笔记文件，已停止写入。")
+        }
+    }
     func safeName(_ text:String)->String {
-        let bad=CharacterSet(charactersIn:"/\\:*?\"<>|\n\r#[]^")
+        let bad=CharacterSet(charactersIn:"/\\:*?\"<>|\n\r#[]^").union(.controlCharacters)
         let n=text.components(separatedBy:bad).joined(separator:" ").trimmingCharacters(in:.whitespacesAndNewlines)
-        return String((n.isEmpty ? "阅读笔记":n).prefix(90))
+        // Filesystem limits are bytes, not grapheme counts. Reserve room for IDs and backups.
+        var result=""
+        for character in n.precomposedStringWithCanonicalMapping {
+            let candidate=result+String(character)
+            guard candidate.decomposedStringWithCanonicalMapping.utf8.count<=180 else { break }
+            result=candidate
+        }
+        return result.isEmpty ? "Reading notes" : result
     }
     func render(_ d:ReaderDocument,marks:[Highlight])->String {
-        var s="[在伴读中阅读](shiye://document/\(d.id))"
-        if let source=d.sourceURL,let u=URL(string:source),["http","https"].contains(u.scheme?.lowercased() ?? "") {s+=" · [原文](\(source.replacingOccurrences(of:")",with:"%29")))"}
-        s+="\n\n\(marks.count) 条批注\n"
+        var s="[\(L("在伴读中阅读"))](shiye://document/\(d.id))"
+        if let source=d.sourceURL,let u=URL(string:source),["http","https"].contains(u.scheme?.lowercased() ?? "") {s+=" · [\(L("原文"))](\(source.replacingOccurrences(of:")",with:"%29")))"}
+        s+="\n\n"+L("{0} 条批注",String(marks.count))+"\n"
         for h in marks {
-            let location=h.page.map{"第 \($0+1) 页"} ?? "回到原文"
+            let location=h.page.map{L("第 {0} 页",String($0+1))} ?? L("回到原文")
             s+="\n### \(location)\n\n"
             // Escape sync delimiters and Markdown headings inside captured content.
             let quote=h.quote.replacingOccurrences(of:"<!-- shiye:",with:"&lt;!-- shiye:")
             s+=quote.components(separatedBy:"\n").map{"> "+$0}.joined(separator:"\n")+"\n\n"
-            if !h.note.isEmpty {s+="**笔记**\n\n"+h.note.replacingOccurrences(of:"<!-- shiye:",with:"&lt;!-- shiye:")+"\n\n"}
-            if !h.tags.isEmpty {s+="标签："+h.tags.replacingOccurrences(of:"<!-- shiye:",with:"&lt;!-- shiye:")+"\n\n"}
-            s+="[定位到这条批注](shiye://document/\(d.id)?highlight=\(h.id))\n^shiye-\(h.id)\n"
+            if !h.note.isEmpty {s+="**"+L("笔记")+"**\n\n"+h.note.replacingOccurrences(of:"<!-- shiye:",with:"&lt;!-- shiye:")+"\n\n"}
+            if !h.tags.isEmpty {s+=L("标签：")+h.tags.replacingOccurrences(of:"<!-- shiye:",with:"&lt;!-- shiye:")+"\n\n"}
+            s+="[\(L("定位到这条批注"))](shiye://document/\(d.id)?highlight=\(h.id))\n^shiye-\(h.id)\n"
         }
         return s
     }
     func writeConflict(_ d:ReaderDocument,block:String,output:URL)throws {
-        let dir=output.appendingPathComponent("待合并");try fm.createDirectory(at:dir,withIntermediateDirectories:true)
-        guard dir.resolvingSymlinksInPath().path.hasPrefix(output.resolvingSymlinksInPath().path+"/") else {throw ReaderError.message("待合并目录路径异常。")}
+        let dir=try scopedDirectory("待合并",inside:output)
         let file=dir.appendingPathComponent("\(safeName(d.title)) — \(d.id.prefix(8)).md")
-        let content="# \(d.title) 的新批注\n\n原笔记中的自动同步区域已被修改，伴读保留了它。以下是最新版本，可手动合并。若希望恢复自动更新，将原笔记两个 shiye 标记之间的内容替换为这里的对应内容，再同步一次。\n\n\(block)\n"
-        if fm.fileExists(atPath:file.path), (try? String(contentsOf:file)) != content { try saveBackup(file,output:output) }
-        guard !fm.fileExists(atPath:file.path) || (try? file.resourceValues(forKeys:[.isSymbolicLinkKey]).isSymbolicLink) != true else {throw ReaderError.message("待合并文件路径异常。")}
+        let content="# \(d.title)\(L("的新批注"))\n\n\(L("原笔记中的自动同步区域已被修改，伴读保留了它。以下是最新版本，可手动合并。若希望恢复自动更新，将原笔记两个 shiye 标记之间的内容替换为这里的对应内容，再同步一次。"))\n\n\(block)\n"
+        try requireRegularTarget(file)
+        if fm.fileExists(atPath:file.path), (try? String(contentsOf:file,encoding:.utf8)) != content { try saveBackup(file,output:output) }
         try Data(content.utf8).write(to:file,options:.atomic)
     }
     func saveBackup(_ target:URL,output:URL)throws {
-        let dir=output.appendingPathComponent(".shiye-backups");try fm.createDirectory(at:dir,withIntermediateDirectories:true)
-        guard dir.resolvingSymlinksInPath().path.hasPrefix(output.resolvingSymlinksInPath().path+"/") else {throw ReaderError.message("同步备份目录路径异常。")}
+        try requireRegularTarget(target)
+        let dir=try scopedDirectory(".shiye-backups",inside:output)
         let stamp=Int(Date().timeIntervalSince1970*1000)
         try fm.copyItem(at:target,to:dir.appendingPathComponent("\(stamp)-\(newID().prefix(8))-\(target.lastPathComponent)"))
     }

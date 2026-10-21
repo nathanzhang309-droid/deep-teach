@@ -85,6 +85,6 @@ struct InkPlan:Decodable {
     }
     func removeTeacherInk(_ answerID:String){
         guard let doc=selectedID,slidesWritable,currentSlideProject.marks.contains(where:{$0.answerID==answerID}) else{return}
-        rememberSlideUndo();slideEdits.projects[doc]?.marks.removeAll{$0.answerID==answerID};selectedSlideMarkID=nil;slideRevision+=1;saveSlides();tutorRevision+=1;tutorStatus="已撤销这次红笔批注，讲解仍保留"
+        rememberSlideUndo();slideEdits.projects[doc]?.marks.removeAll{$0.answerID==answerID};selectedSlideMarkID=nil;slideRevision+=1;saveSlides();tutorRevision+=1;tutorStatus=L("已撤销这次红笔批注，讲解仍保留")
     }
 }

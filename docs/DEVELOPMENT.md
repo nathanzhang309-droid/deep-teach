@@ -13,8 +13,8 @@
 ## Checks without an AI account
 
 ```bash
-bash scripts/test.sh
 (cd TeacherUI && npm ci && npm run build)
+bash scripts/test.sh
 bash build.sh
 codesign --verify --deep --strict build/伴读.app
 ```
@@ -46,8 +46,16 @@ Build from the exact tagged source. Do not upload an old personalized app bundle
 
 ```bash
 mkdir -p dist
-ditto -c -k --sequesterRsrc --keepParent build/伴读.app dist/Bandu-1.2.2-macOS-arm64.zip
-(cd dist && shasum -a 256 Bandu-1.2.2-macOS-arm64.zip > SHA256SUMS.txt)
+ditto -c -k --sequesterRsrc --keepParent build/伴读.app dist/deep-teach-1.3.0-macOS-arm64.zip
+(cd dist && shasum -a 256 deep-teach-1.3.0-macOS-arm64.zip > SHA256SUMS.txt)
 ```
 
 The initial release is ad-hoc signed and not notarized. No signing certificates, provider sessions or private credentials belong in CI. Repository maintainers must document tested versions and limitations honestly.
+
+## Bilingual adversarial checks
+
+`bash scripts/test.sh` now also runs `Tests/AdversarialCoreTests.swift`, the Node request-contract tests, the bundled TypeScript adversarial tests, and translation/placeholder coverage. Run `npm ci` in `TeacherUI/` first. These tests do not call a subscribed model.
+
+For native WebKit/AppKit checks, use a separately signed test copy with a unique bundle identifier, remove its URL handlers, and provide a **new synthetic library** through `SHIYE_DATA_DIR`. Launch with `BANDU_ADVERSARIAL_TEST=1 DEEP_TEACH_LANGUAGE=en`; `adversarial-native.json` is written under that library. The harness tests native menus, selection preservation, a mock teacher bridge (no model calls), IME events, draft limits, narrow panes, quiz state and Obsidian exports. `BANDU_INK_TEST=1` additionally calls a real logged-in Codex subscription; do not enable it in CI. See `Sources/AdversarialNativeTests.swift` and the existing test harnesses for fixtures.
+
+Translations live in `Resources/en.json`; native `L()` and web `t()` substitute indexed placeholders without reinterpreting user strings. Keep theme, filter, provider and persisted folder identifiers unchanged. Add new interface keys to the catalog and run `Tests/check-localization.mjs`.

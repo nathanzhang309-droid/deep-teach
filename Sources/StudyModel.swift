@@ -10,14 +10,14 @@ import UniformTypeIdentifiers
         guard FileManager.default.fileExists(atPath:studyURL.path) else { return }
         do {
             let loaded = try JSONDecoder().decode(StudyArchive.self,from:Data(contentsOf:studyURL))
-            guard loaded.version == 1 else { throw ReaderError.message("学习笔记版本不兼容") }
+            guard loaded.version == 1 else { throw ReaderError.message(L("学习笔记版本不兼容")) }
             study = loaded
         } catch {
             let previous = store.root.appendingPathComponent("study-notes.previous.json")
             if let bytes = try? Data(contentsOf:previous), let old = try? JSONDecoder().decode(StudyArchive.self,from:bytes), old.version == 1 {
                 try? FileManager.default.copyItem(at:studyURL,to:store.root.appendingPathComponent("study-notes-damaged-\(newID()).json"))
-                study = old; studyStatus = "学习笔记已从备份恢复"
-            } else { studyWritable = false; studyStatus = "学习笔记无法读取，原文件已保留，请从备份恢复" }
+                study = old; studyStatus = L("学习笔记已从备份恢复")
+            } else { studyWritable = false; studyStatus = L("学习笔记无法读取，原文件已保留，请从备份恢复") }
         }
     }
     @discardableResult func saveStudy(sync: Bool = true) -> Bool {
@@ -30,7 +30,7 @@ import UniformTypeIdentifiers
             try bytes.write(to:studyURL,options:.atomic)
             if sync && autoSync { scheduleSync() }
             return true
-        } catch { studyStatus = "学习笔记保存失败：" + error.localizedDescription; return false }
+        } catch { studyStatus = L("学习笔记保存失败：") + error.localizedDescription; return false }
     }
     func recordStudyTurn(documentID: String, answerID: String) {
         guard studyWritable, let messages = teaching.conversations[documentID],
@@ -38,7 +38,7 @@ import UniformTypeIdentifiers
         var book = study.notebooks[documentID] ?? StudyNotebook()
         if StudyEngine.record(&book,question:messages[i-1],answer:messages[i]) {
             study.notebooks[documentID] = book
-            studyStatus = study.autoEnabled ? "问答已记录，等待整理" : "问答已记录，自动整理已关闭"
+            studyStatus = study.autoEnabled ? L("问答已记录，等待整理") : L("问答已记录，自动整理已关闭")
             if saveStudy() { processStudyQueue() }
         }
     }
@@ -50,7 +50,7 @@ import UniformTypeIdentifiers
             if StudyEngine.record(&book,question:messages[i-1],answer:messages[i]) { count += 1 }
         }
         study.notebooks[id] = book
-        studyStatus = count > 0 ? "已补录 \(count) 轮问答" : "没有尚未记录的完整问答"
+        studyStatus = count > 0 ? L("已补录 {0} 轮问答", String(describing: count)) : L("没有尚未记录的完整问答")
         if saveStudy() { studyManualDocument = id; processStudyQueue() }
     }
     func retryStudyNotes() {
@@ -66,7 +66,7 @@ import UniformTypeIdentifiers
     }
     func setStudyAuto(_ enabled: Bool) {
         study.autoEnabled=enabled; studyManualDocument=nil
-        if !enabled { pauseStudyProcess(); studyStatus="自动整理已关闭，问答仍会在本地记录" }
+        if !enabled { pauseStudyProcess(); studyStatus=L("自动整理已关闭，问答仍会在本地记录") }
         if saveStudy(sync:false), enabled { processStudyQueue() }
     }
     func processStudyQueue() {
@@ -78,32 +78,32 @@ import UniformTypeIdentifiers
         let topics=book.topics.filter{$0.refined}.map { ["id":$0.id,"title":$0.title,"summary":$0.summary,"points":$0.points] as [String:Any] }
         let recent=book.turns.filter{$0.state == "done"}.suffix(4).map{["question":String($0.question.prefix(1500)),"answer":String($0.answer.prefix(2500)),"topicID":$0.topicID,"page":$0.page] as [String:Any]}
         let source=teaching.conversations[docID]?.first(where:{$0.id==turn.id})?.context?.text ?? ""
-        let request:[String:Any] = ["mode":"study","provider":tutorProvider,"documentName":document.title,"question":turn.question,"answer":turn.answer,"page":turn.page,"sourceText":source,"topics":topics,"recent":recent]
-        let runner=TeacherProcess();studyProcess=runner;studyBusy=true;studyStatus="正在整理《\(document.title)》的学习笔记…"
+        let request:[String:Any] = ["language":AppLanguage.code,"mode":"study","provider":tutorProvider,"documentName":document.title,"question":turn.question,"answer":turn.answer,"page":turn.page,"sourceText":source,"topics":topics,"recent":recent]
+        let runner=TeacherProcess();studyProcess=runner;studyBusy=true;studyStatus=L("正在整理《{0}》的学习笔记…", String(describing: document.title))
         var output="";var finalized=false
         func fail(_ message:String) {
             if let i=self.study.notebooks[docID]?.turns.firstIndex(where:{$0.id==turn.id}) { self.study.notebooks[docID]!.turns[i].state="error" }
-            self.studyStatus="整理未完成，原问答已保留。\(message)";_ = self.saveStudy(sync:false)
+            self.studyStatus=L("整理未完成，原问答已保留。{0}", String(describing: message));_ = self.saveStudy(sync:false)
         }
         do { try runner.start(request) { [weak self,weak runner] event in
             guard let self, let runner, self.studyProcess === runner else { return }
             let type=event["type"] as? String ?? ""
-            if type == "delta", let chunk=event["text"] as? String { output += chunk; if output.count > 120000 { fail("输出过长，请重试");finalized=true;runner.stop() } }
-            if type == "error" { fail(event["error"] as? String ?? "请重试");finalized=true }
+            if type == "delta", let chunk=event["text"] as? String { output += chunk; if output.count > 120000 { fail(L("输出过长，请重试"));finalized=true;runner.stop() } }
+            if type == "error" { fail(event["error"] as? String ?? L("请重试"));finalized=true }
             if type == "done", !finalized {
                 do {
                     let raw=output.trimmingCharacters(in:.whitespacesAndNewlines)
-                    guard let start=raw.firstIndex(of:"{"), let end=raw.lastIndex(of:"}"), start <= end else { throw ReaderError.message("模型未返回可用笔记") }
+                    guard let start=raw.firstIndex(of:"{"), let end=raw.lastIndex(of:"}"), start <= end else { throw ReaderError.message(L("模型未返回可用笔记")) }
                     let refined=try JSONDecoder().decode(StudyRefinement.self,from:Data(raw[start...end].utf8))
-                    guard var latest=self.study.notebooks[docID] else { throw ReaderError.message("笔记不存在") }
+                    guard var latest=self.study.notebooks[docID] else { throw ReaderError.message(L("笔记不存在")) }
                     try StudyEngine.apply(refined,turnID:turn.id,to:&latest)
-                    self.study.notebooks[docID]=latest;self.studyStatus="《\(document.title)》学习笔记已更新"
+                    self.study.notebooks[docID]=latest;self.studyStatus=L("《{0}》学习笔记已更新", String(describing: document.title))
                     _ = self.saveStudy()
                 } catch { fail(error.localizedDescription) }
                 finalized=true
             }
             if type == "exit" {
-                if !finalized { fail("整理意外中断，请重试") }
+                if !finalized { fail(L("整理意外中断，请重试")) }
                 self.studyBusy=false;self.studyProcess=nil;self.processStudyQueue()
             }
         }} catch { fail(error.localizedDescription);studyBusy=false;studyProcess=nil }
@@ -135,7 +135,7 @@ import UniformTypeIdentifiers
             if !w.setFrameUsingName("BanduStudyReview"){w.center()};w.setFrameAutosaveName("BanduStudyReview")
             w.contentView=NSHostingView(rootView:StudyNotesView(model:self,compact:false));studyWindow=w
         }
-        studyWindow?.title="学习笔记 · \(selectedDocument?.title ?? "")";studyWindow?.makeKeyAndOrderFront(nil)
+        studyWindow?.title=L("学习笔记 · {0}", String(describing: selectedDocument?.title ?? ""));studyWindow?.makeKeyAndOrderFront(nil)
     }
     func jumpToStudySource(page:Int) {
         guard let document=selectedDocument else{return}
@@ -144,7 +144,7 @@ import UniformTypeIdentifiers
     }
     func exportStudyMarkdown() {
         guard let document=selectedDocument else{return}
-        let panel=NSSavePanel();panel.nameFieldStringValue=ObsidianSync().safeName(document.title)+" — 学习笔记.md";panel.allowedContentTypes=[UTType(filenameExtension:"md") ?? .plainText]
+        let panel=NSSavePanel();panel.nameFieldStringValue=ObsidianSync().safeName(document.title)+L(" — 学习笔记.md");panel.allowedContentTypes=[UTType(filenameExtension:"md") ?? .plainText]
         if panel.runModal() == .OK,let url=panel.url {
             do{try ("# \(document.title)\n\n"+StudyEngine.markdown(currentNotebook,document:document)).write(to:url,atomically:true,encoding:.utf8)}catch{errorMessage=error.localizedDescription}
         }

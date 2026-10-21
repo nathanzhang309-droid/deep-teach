@@ -71,23 +71,23 @@ fileprivate func slideHexColor(_ hex: String) -> Color {
 
 /// 固定五色：鼠尾草绿、砖红、靛蓝、琥珀、墨色
 private let slideMarkColors: [(hex: String, name: String)] = [
-    ("#55735B", "鼠尾草绿"),
-    ("#B5533C", "砖红"),
-    ("#2F5D8A", "靛蓝"),
-    ("#C8962E", "琥珀"),
-    ("#2B2B28", "墨色")
+    ("#55735B", L("鼠尾草绿")),
+    ("#B5533C", L("砖红")),
+    ("#2F5D8A", L("靛蓝")),
+    ("#C8962E", L("琥珀")),
+    ("#2B2B28", L("墨色"))
 ]
 
 private func slideKindName(_ kind: String) -> String {
     switch kind {
-    case "label": return "红笔文字"
-    case "underline": return "下划线"
-    case "text": return "文字"
-    case "rectangle": return "矩形"
-    case "ellipse": return "圆圈"
-    case "arrow": return "箭头"
-    case "image": return "图片"
-    default: return "对象"
+    case "label": return L("红笔文字")
+    case "underline": return L("下划线")
+    case "text": return L("文字")
+    case "rectangle": return L("矩形")
+    case "ellipse": return L("圆圈")
+    case "arrow": return L("箭头")
+    case "image": return L("图片")
+    default: return L("对象")
     }
 }
 
@@ -151,7 +151,7 @@ struct SlideInspector: View {
     private func header(_ p: SlidePalette) -> some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("课件批注")
+                Text(L("课件批注"))
                     .font(.headline)
                 if !model.pageLabel.isEmpty {
                     Text(model.pageLabel)
@@ -169,7 +169,7 @@ struct SlideInspector: View {
             }
             .buttonStyle(.borderless)
             .disabled(!model.canUndoSlide)
-            .help("撤销")
+            .help(L("撤销"))
 
             Button {
                 model.redoSlideChange()
@@ -178,9 +178,9 @@ struct SlideInspector: View {
             }
             .buttonStyle(.borderless)
             .disabled(!model.canRedoSlide)
-            .help("重做")
+            .help(L("重做"))
 
-            Button("完成") {
+            Button(L("完成")) {
                 model.slideEditing = false
             }
             .buttonStyle(.borderedProminent)
@@ -195,15 +195,15 @@ struct SlideInspector: View {
 
     private func createSection(_ p: SlidePalette) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            sectionTitle("添加到本页", p)
+            sectionTitle(L("添加到本页"), p)
             HStack(spacing: 8) {
-                toolButton("文字", "textformat", p) { model.addSlideText() }
-                toolButton("矩形", "rectangle", p) { model.addSlideShape("rectangle") }
-                toolButton("圆圈", "circle", p) { model.addSlideShape("ellipse") }
+                toolButton(L("文字"), "textformat", p) { model.addSlideText() }
+                toolButton(L("矩形"), "rectangle", p) { model.addSlideShape("rectangle") }
+                toolButton(L("圆圈"), "circle", p) { model.addSlideShape("ellipse") }
             }
             HStack(spacing: 8) {
-                toolButton("箭头", "arrow.up.right", p) { model.addSlideShape("arrow") }
-                toolButton("图片", "photo", p) { model.importSlideImage() }
+                toolButton(L("箭头"), "arrow.up.right", p) { model.addSlideShape("arrow") }
+                toolButton(L("图片"), "photo", p) { model.importSlideImage() }
                 newPageMenu(p)
             }
         }
@@ -225,24 +225,24 @@ struct SlideInspector: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("添加\(title)")
+        .help(L("添加{0}", String(describing: title)))
     }
 
     private func newPageMenu(_ p: SlidePalette) -> some View {
         Menu {
-            Button("空白讲解页") { model.addBlankSlide() }
+            Button(L("空白讲解页")) { model.addBlankSlide() }
             Divider()
             if model.currentStudyTopics.filter({ $0.refined }).isEmpty {
-                Text("暂无已整理的知识点，可先在学习笔记中整理")
+                Text(L("暂无已整理的知识点，可先在学习笔记中整理"))
             } else {
-                Section("由已整理知识点生成图解页") {
+                Section(L("由已整理知识点生成图解页")) {
                     ForEach(model.currentStudyTopics.filter { $0.refined }, id: \.id) { topic in
                         Button(topic.title) { model.addStudySlide(topicID: topic.id) }
                     }
                 }
             }
         } label: {
-            Label("新页", systemImage: "doc.badge.plus")
+            Label(L("新页"), systemImage: "doc.badge.plus")
                 .font(.caption)
         }
         .menuStyle(.borderlessButton)
@@ -250,7 +250,7 @@ struct SlideInspector: View {
         .fixedSize()
         .frame(maxWidth: .infinity, minHeight: 46)
         .background(tileBackground(p))
-        .help("在页尾追加讲解页")
+        .help(L("在页尾追加讲解页"))
     }
 
     private func tileBackground(_ p: SlidePalette) -> some View {
@@ -266,7 +266,7 @@ struct SlideInspector: View {
         HStack(alignment: .top, spacing: 6) {
             Image(systemName: "info.circle")
                 .foregroundColor(p.accent)
-            Text("页上拖动对象，右下角手柄缩放。批注在课件副本的叠加层上，原始 PPT 不改动，新页追加在页尾。图片/公式图保留为图片，可移动缩放；文字与图形可编辑。")
+            Text(L("页上拖动对象，右下角手柄缩放。批注在课件副本的叠加层上，原始 PPT 不改动，新页追加在页尾。图片/公式图保留为图片，可移动缩放；文字与图形可编辑。"))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .font(.caption)
@@ -282,9 +282,9 @@ struct SlideInspector: View {
 
     private func objectListSection(_ p: SlidePalette) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            sectionTitle("本页对象", p)
+            sectionTitle(L("本页对象"), p)
             if model.currentSlideMarks.isEmpty {
-                Text("本页还没有批注。用上方按钮添加，或在课件上直接点选。")
+                Text(L("本页还没有批注。用上方按钮添加，或在课件上直接点选。"))
                     .font(.caption)
                     .foregroundColor(p.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -330,7 +330,7 @@ struct SlideInspector: View {
         }
         .buttonStyle(.plain)
         .contextMenu {
-            Button("删除", role: .destructive) { model.deleteSlideMark(mark.id) }
+            Button(L("删除"), role: .destructive) { model.deleteSlideMark(mark.id) }
         }
     }
 
@@ -340,17 +340,17 @@ struct SlideInspector: View {
         let id = mark.id
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
-                sectionTitle("\(slideKindName(mark.kind))属性", p)
+                sectionTitle(L("{0}属性", String(describing: slideKindName(mark.kind))), p)
                 Spacer()
                 Button(role: .destructive) {
                     model.deleteSlideMark(id)
                 } label: {
-                    Label("删除", systemImage: "trash")
+                    Label(L("删除"), systemImage: "trash")
                         .font(.caption)
                 }
                 .buttonStyle(.borderless)
                 .keyboardShortcut(.delete, modifiers: .command)
-                .help("删除对象（⌘⌫）")
+                .help(L("删除对象（⌘⌫）"))
             }
 
             if mark.kind == "text" || mark.kind == "label" {
@@ -363,18 +363,18 @@ struct SlideInspector: View {
                     .id(id) // 切换对象时重建，避免把输入写到别的对象
 
                 Stepper(value: fontSizeBinding(id), in: 9...72, step: 1) {
-                    propertyLabel("字号", "\(Int(mark.fontSize.rounded())) pt", p)
+                    propertyLabel(L("字号"), "\(Int(mark.fontSize.rounded())) pt", p)
                 }
             }
 
-            if mark.kind == "arrow" { Button("转向箭头") { model.rotateSlideArrow(id) } }
+            if mark.kind == "arrow" { Button(L("转向箭头")) { model.rotateSlideArrow(id) } }
             if mark.kind == "image" {
-                Text("图片保持原样，可移动和缩放。")
+                Text(L("图片保持原样，可移动和缩放。"))
                     .font(.caption)
                     .foregroundColor(p.secondary)
             } else {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("颜色").font(.caption).foregroundColor(p.secondary)
+                    Text(L("颜色")).font(.caption).foregroundColor(p.secondary)
                     HStack(spacing: 10) {
                         ForEach(slideMarkColors, id: \.hex) { item in
                             colorSwatch(item.hex, item.name,
@@ -388,10 +388,10 @@ struct SlideInspector: View {
             }
 
             Stepper(value: sizeBinding(id, \.width), in: 20...2000, step: 10) {
-                propertyLabel("宽", "\(Int(mark.width.rounded()))", p)
+                propertyLabel(L("宽"), "\(Int(mark.width.rounded()))", p)
             }
             Stepper(value: sizeBinding(id, \.height), in: 20...2000, step: 10) {
-                propertyLabel("高", "\(Int(mark.height.rounded()))", p)
+                propertyLabel(L("高"), "\(Int(mark.height.rounded()))", p)
             }
 
             nudgePad(id, p)
@@ -429,9 +429,9 @@ struct SlideInspector: View {
     private func nudgePad(_ id: String, _ p: SlidePalette) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("位置微调").font(.caption).foregroundColor(p.secondary)
+                Text(L("位置微调")).font(.caption).foregroundColor(p.secondary)
                 Spacer()
-                Picker("步长", selection: $nudgeStep) {
+                Picker(L("步长"), selection: $nudgeStep) {
                     Text("1").tag(1.0)
                     Text("5").tag(5.0)
                     Text("20").tag(20.0)
@@ -443,11 +443,11 @@ struct SlideInspector: View {
             HStack {
                 Spacer()
                 VStack(spacing: 4) {
-                    nudgeButton("chevron.up", "上移", p) { model.moveSlideMark(id: id, dx: 0, dy: nudgeStep) }
+                    nudgeButton("chevron.up", L("上移"), p) { model.moveSlideMark(id: id, dx: 0, dy: nudgeStep) }
                     HStack(spacing: 4) {
-                        nudgeButton("chevron.left", "左移", p) { model.moveSlideMark(id: id, dx: -nudgeStep, dy: 0) }
-                        nudgeButton("chevron.down", "下移", p) { model.moveSlideMark(id: id, dx: 0, dy: -nudgeStep) }
-                        nudgeButton("chevron.right", "右移", p) { model.moveSlideMark(id: id, dx: nudgeStep, dy: 0) }
+                        nudgeButton("chevron.left", L("左移"), p) { model.moveSlideMark(id: id, dx: -nudgeStep, dy: 0) }
+                        nudgeButton("chevron.down", L("下移"), p) { model.moveSlideMark(id: id, dx: 0, dy: -nudgeStep) }
+                        nudgeButton("chevron.right", L("右移"), p) { model.moveSlideMark(id: id, dx: nudgeStep, dy: 0) }
                     }
                 }
                 Spacer()
@@ -521,9 +521,9 @@ struct SlideInspector: View {
             Image(systemName: "doc.richtext")
                 .font(.system(size: 28))
                 .foregroundColor(p.secondary)
-            Text("先打开一份课件")
+            Text(L("先打开一份课件"))
                 .font(.callout)
-            Text("PPT 会转换为 PDF 副本后再批注，原文件保持不变。")
+            Text(L("PPT 会转换为 PDF 副本后再批注，原文件保持不变。"))
                 .font(.caption)
                 .foregroundColor(p.secondary)
                 .multilineTextAlignment(.center)
@@ -538,7 +538,7 @@ struct SlideInspector: View {
             Button {
                 model.exportMarkedPDF()
             } label: {
-                Label("导出含批注的 PDF", systemImage: "square.and.arrow.up")
+                Label(L("导出含批注的 PDF"), systemImage: "square.and.arrow.up")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
@@ -546,7 +546,7 @@ struct SlideInspector: View {
             .tint(p.accent)
             .disabled(!hasDocument)
 
-            Text("包含批注与页尾新增讲解页，原始 PPT 不变")
+            Text(L("包含批注与页尾新增讲解页，原始 PPT 不变"))
                 .font(.caption2)
                 .foregroundColor(p.secondary)
         }

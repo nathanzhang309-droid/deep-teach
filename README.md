@@ -20,11 +20,19 @@ deep-teach（伴读）是一个原生 macOS 阅读与学习应用：打开 PDF �
 - **Obsidian 同步**：单向写入本地 Markdown，保护手写区域；冲突另存，避免覆盖。
 - **可调工作区**：书房、课件、老师／笔记栏可拖动调整比例，窗口布局自动记住。
 
+## 中英文使用
+
+在「设置 → 语言 / Language」选择「跟随系统 / 中文 / English」，立即切换界面、主菜单和新讲解的默认语言。原课件、已保存问答、笔记、输入草稿与测验选择保留原文。中文界面下也可以用英文提问；若希望老师换一种语言回答，请在问题中明确说明。
+
+中文、英文、emoji 与混合语言标题均可保存和同步。文本文件支持 UTF-8 或带 BOM 的 UTF-16；其他编码请先转换，避免乱码。超长问题会保留草稿并提示缩短。Obsidian 的旧同步路径和内部数据标识保持兼容。
+
+[双语对抗测试报告](docs/VALIDATION.md) 列出了实际复现的问题、修复和未覆盖范围。
+
 ## 安装
 
 需要 **Apple Silicon Mac（M1 或更新）和 macOS 13+**。当前没有 Intel、Windows 或 Linux 版本。
 
-1. 从 [Releases](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) 下载 `Bandu-1.2.2-macOS-arm64.zip`，解压后把 `伴读.app` 移到“应用程序”。
+1. 从 [Releases](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) 下载 `deep-teach-1.3.0-macOS-arm64.zip`，解压后把 `伴读.app` 移到“应用程序”。
 2. 应用采用 ad-hoc 签名，**尚未 Apple 公证**。macOS 可能提示无法验证开发者；确认下载来源后，可在“系统设置 → 隐私与安全”按系统提示允许打开，或自行从源码构建。
 3. 导入课件开始阅读。PPT/PPTX 转换需要本机安装 Keynote；也可以先在 PowerPoint 导出 PDF。
 4. AI 功能另需安装并登录 [Codex CLI](https://developers.openai.com/codex/cli/) 或 [Claude Code](https://code.claude.com/docs/en/overview)，在老师面板选择已登录的一方。CLI 未登录时，阅读仍可使用。
@@ -53,7 +61,7 @@ cd ..
 bash build.sh
 ```
 
-测试核心存储、同步与布局：
+测试核心存储、同步、布局、双语请求和异常输入（先在 TeacherUI 中执行 `npm ci`，需 Node.js 24）：
 
 ```bash
 bash scripts/test.sh

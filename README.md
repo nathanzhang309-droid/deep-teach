@@ -1,14 +1,22 @@
-# deep-teach
+# deep-teach · 伴读
+
+**[简体中文](README.md) | [English](README.en.md)**
 
 **在原课件上学懂，再带着自己的笔记去复习。**
 
+**Understand your slides, annotate them in place, and review with notes shaped by your questions.**
+
 deep-teach（伴读）是一个原生 macOS 阅读与学习应用：打开 PDF 或 PPT，框出不懂的地方，老师在旁边解释，并直接在原页上用红笔圈注。学习过程会整理成可编辑的个人笔记，可以大屏复习、同步到 Obsidian，也能导出带批注的 PDF。
 
-[下载安装](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) · [English](README.en.md) · [使用指南](docs/USAGE.md) · [隐私说明](PRIVACY.md)
+deep-teach is a native macOS reading and study app. Open a PDF or presentation, select what you don’t understand, and ask an AI tutor that explains alongside the page and adds editable red-pen annotations. Turn your questions into personalized study notes, review them in a separate window, sync them to Obsidian, or export an annotated PDF.
+
+[下载安装 / Download](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) · [完整英文介绍 / Full English guide](README.en.md) · [使用指南](docs/USAGE.md) · [隐私说明](PRIVACY.md)
 
 ![伴读自动红笔批注与侧栏讲解，画面使用合成课件](docs/red-pen-demo.png)
 
 > 阅读和笔记可离线使用。AI 功能需要你自己的 Codex / Claude 订阅及对应 CLI 登录，消耗现有订阅额度；不包含免费 AI 服务，也不使用 API Key 计费。
+>
+> Reading and note-taking work offline. AI features require your own supported Codex or Claude subscription and CLI login; they use your subscription allowance. No free hosted AI service is included, and the app does not use API-key billing.
 
 ## 能做什么
 

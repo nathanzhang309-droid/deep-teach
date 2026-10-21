@@ -1,12 +1,14 @@
 # deep-teach · 伴读
 
-**Understand your slides, annotate them in place, and review with notes that reflect your questions.**
+**[简体中文](README.md) | [English](README.en.md)**
 
-deep-teach is a native macOS reading and study app built with SwiftUI, AppKit, PDFKit, and a local WebKit teaching panel.
+**Understand your slides, annotate them in place, and review with notes shaped by your questions.**
+
+deep-teach is a native macOS reading and study app. Open a PDF or presentation, select what you don’t understand, and ask an AI tutor that explains alongside the page and adds editable red-pen annotations. Turn your questions into personalized study notes, review them in a separate window, sync them to Obsidian, or export an annotated PDF.
 
 [Download](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) · [中文](README.md) · [Privacy](PRIVACY.md)
 
-![Automatic red-pen annotations beside a tutor conversation; synthetic lesson](docs/red-pen-demo.png)
+![English tutor interface with a synthetic lesson](docs/english-teacher.png)
 
 - Switch between English and Chinese in Settings without losing drafts or quiz selections.
 - Read PDFs, presentations, unencrypted EPUBs, Markdown, text, HTML and web articles.

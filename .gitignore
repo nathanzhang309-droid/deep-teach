@@ -1,0 +1,16 @@
+.DS_Store
+build/
+dist/
+node_modules/
+Resources/Teacher/runtime/*
+!Resources/Teacher/runtime/.gitkeep
+*.app/
+*.dSYM/
+*.bandu
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.log
+coverage/

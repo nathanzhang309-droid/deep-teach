@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; img-src data:; style-src 'unsafe-inline'"><script src="marked.umd.js"></script><script src="Readability.js"></script><script src="purify.min.js"></script><script>
+window.extractArticle=(html,base='',readable=false)=>{
+ const doc=new DOMParser().parseFromString(html,'text/html');
+ const baseTag=doc.createElement('base');baseTag.href=base||'https://invalid.local/';doc.head.prepend(baseTag);
+ let title=doc.title,content=doc.body.innerHTML;
+ if(readable){const article=new Readability(doc,{charThreshold:100}).parse();if(!article||article.textContent.trim().length<80)throw Error('没有找到足够的正文。请保存为 PDF 或导入网页文件。');title=article.title;content=article.content;}
+ const clean=DOMPurify.sanitize(content,{USE_PROFILES:{html:true},FORBID_TAGS:['style','form','input','button','textarea','select','iframe','object','embed','video','audio','link','meta','base'],FORBID_ATTR:['style','srcset','id','class'],ALLOW_DATA_ATTR:false});
+ const out=new DOMParser().parseFromString(clean,'text/html');let images=[];
+ out.querySelectorAll('img').forEach((img,i)=>{const src=img.getAttribute('src')||'';try{const url=new URL(src,base||'https://invalid.local/');if(url.protocol==='data:'&&/^data:image\/(png|jpeg|gif|webp);base64,/.test(src))return;if(['http:','https:'].includes(url.protocol)&&base){img.setAttribute('src',url.href);images.push(url.href);}else img.remove();}catch{img.remove();}});
+ out.querySelectorAll('a').forEach(a=>{try{const u=new URL(a.getAttribute('href')||'',base||'https://invalid.local/');if(['https:','http:'].includes(u.protocol)){a.href=u.href;a.rel='noreferrer';}else a.removeAttribute('href');}catch{a.removeAttribute('href')}});
+ return {title:title||'',html:out.body.innerHTML,text:out.body.textContent||'',images:[...new Set(images)].slice(0,24)};
+};
+</script>

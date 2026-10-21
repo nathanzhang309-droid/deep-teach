@@ -1,0 +1,6 @@
+Resources/TeacherUI/** linguist-generated=true
+Resources/Licenses/** linguist-vendored=true
+Resources/Readability.js linguist-vendored=true
+Resources/purify.min.js linguist-vendored=true
+Resources/marked.umd.js linguist-vendored=true
+TeacherUI/package-lock.json linguist-generated=true

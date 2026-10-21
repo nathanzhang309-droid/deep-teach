@@ -1,0 +1,28 @@
+{
+  "name": "bandu-teacher-panel",
+  "version": "1.2.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild main.tsx --bundle --minify --format=iife --target=safari16 --loader:.woff=file --loader:.woff2=file --loader:.ttf=file --asset-names=fonts/[name]-[hash] --outfile=../Resources/TeacherUI/main.js"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-markdown": "10.1.0",
+    "remark-gfm": "4.0.1",
+    "remark-math": "6.0.0",
+    "rehype-katex": "7.0.1",
+    "katex": "0.18.10",
+    "mermaid": "11.17.2",
+    "echarts": "6.1.0",
+    "mathjs": "15.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
+  },
+  "license": "MIT"
+}

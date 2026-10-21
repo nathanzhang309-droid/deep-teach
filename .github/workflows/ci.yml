@@ -1,0 +1,27 @@
+name: Build and test
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  macos:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.20.0'
+          cache: npm
+          cache-dependency-path: TeacherUI/package-lock.json
+      - name: Rebuild teaching UI
+        working-directory: TeacherUI
+        run: npm ci && npm run build
+      - name: Core and layout tests
+        run: bash scripts/test.sh
+      - name: Build Apple Silicon app
+        run: bash build.sh
+      - name: Verify app signature
+        run: codesign --verify --deep --strict build/伴读.app

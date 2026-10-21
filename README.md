@@ -12,6 +12,12 @@ deep-teach is a native macOS reading and study app. Open a PDF or presentation, 
 
 [下载安装 / Download](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) · [完整英文介绍 / Full English guide](README.en.md) · [使用指南](docs/USAGE.md) · [隐私说明](PRIVACY.md)
 
+## 45 秒了解伴读
+
+[![播放中文版介绍视频：框选提问、红笔批注、个性化笔记与 Obsidian 同步](docs/media/deep-teach-cover-zh.png)](https://github.com/nathanzhang309-droid/deep-teach/blob/main/docs/media/deep-teach-zh-bgm.mp4)
+
+**[▶ 播放中文版](https://github.com/nathanzhang309-droid/deep-teach/blob/main/docs/media/deep-teach-zh-bgm.mp4)** · 45 秒 · 中文字幕 · 纯音乐 BGM，无人声旁白。画面使用合成课件和演示数据。
+
 ![伴读自动红笔批注与侧栏讲解，画面使用合成课件](docs/red-pen-demo.png)
 
 > 阅读和笔记可离线使用。AI 功能需要你自己的 Codex / Claude 订阅及对应 CLI 登录，消耗现有订阅额度；不包含免费 AI 服务，也不使用 API Key 计费。

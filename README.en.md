@@ -8,6 +8,12 @@ deep-teach is a native macOS reading and study app. Open a PDF or presentation, 
 
 [Download](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) · [中文](README.md) · [Privacy](PRIVACY.md)
 
+## Meet deep-teach in 45 seconds
+
+[![Watch the English introduction: select and ask, red-pen annotations, personal notes and Obsidian sync](docs/media/deep-teach-cover-en.png)](https://github.com/nathanzhang309-droid/deep-teach/blob/main/docs/media/deep-teach-en-bgm.mp4)
+
+**[▶ Watch in English](https://github.com/nathanzhang309-droid/deep-teach/blob/main/docs/media/deep-teach-en-bgm.mp4)** · 45 seconds · English captions · Instrumental BGM, no voiceover. Shown with synthetic course material and demo data.
+
 ![English tutor interface with a synthetic lesson](docs/english-teacher.png)
 
 - Switch between English and Chinese in Settings without losing drafts or quiz selections.

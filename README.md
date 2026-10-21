@@ -14,7 +14,7 @@ deep-teach is a native macOS reading and study app. Open a PDF or presentation, 
 
 ## 45 秒了解伴读
 
-[![下载中文版介绍视频：框选提问、红笔批注、个性化笔记与 Obsidian 同步](docs/media/deep-teach-cover-zh.png)](https://github.com/nathanzhang309-droid/deep-teach/raw/refs/heads/main/docs/media/deep-teach-zh-bgm.mp4)
+https://github.com/user-attachments/assets/d579cd87-2e03-44de-8e58-6c62cd92ab7f
 
 **[下载中文版视频](https://github.com/nathanzhang309-droid/deep-teach/raw/refs/heads/main/docs/media/deep-teach-zh-bgm.mp4)** · 45 秒 · 中文字幕 · 纯音乐 BGM，无人声旁白。画面使用合成课件和演示数据。
 

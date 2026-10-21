@@ -34,6 +34,7 @@ This writes a JSON result and synthetic PDF/screenshots inside the test director
 
 - `BANDU_SLIDE_TEST=1`: 22 native selection/editing/visual-capture/export checks. No provider call required.
 - `BANDU_LAYOUT_TEST=1`: native layout and restoration checks.
+- `BANDU_PRACTICE_TEST=1`: 15 offline native practice/review checks. Add `BANDU_PRACTICE_LIVE_TEST=1` and `BANDU_TEST_PROVIDER=codex` or `claude` for a synthetic subscription-backed run. `BANDU_TEST_QUIT=1` exits after writing the result. See [practice validation](PRACTICE-VALIDATION.md).
 - `BANDU_STUDY_TEST=1`: local study-note checks. Add `BANDU_STUDY_LIVE_TEST=1` only to opt into subscription-backed semantic organization.
 - `BANDU_INTEGRATION_TEST=1`: reading/import/selection; `BANDU_LIVE_TEST=1` opts into its live provider test.
 - `BANDU_INK_TEST=1`: 20 automatic-annotation checks, including viewport/page clipping pixel counts and a **real Codex request using synthetic material**. This mode consumes your subscription allowance.
@@ -46,8 +47,8 @@ Build from the exact tagged source. Do not upload an old personalized app bundle
 
 ```bash
 mkdir -p dist
-ditto -c -k --sequesterRsrc --keepParent build/伴读.app dist/deep-teach-1.3.0-macOS-arm64.zip
-(cd dist && shasum -a 256 deep-teach-1.3.0-macOS-arm64.zip > SHA256SUMS.txt)
+ditto -c -k --sequesterRsrc --keepParent build/伴读.app dist/deep-teach-1.4.0-macOS-arm64.zip
+(cd dist && shasum -a 256 deep-teach-1.4.0-macOS-arm64.zip > SHA256SUMS.txt)
 ```
 
 The initial release is ad-hoc signed and not notarized. No signing certificates, provider sessions or private credentials belong in CI. Repository maintainers must document tested versions and limitations honestly.

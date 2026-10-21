@@ -16,11 +16,24 @@ struct TeacherPanel:NSViewRepresentable {
         var model:AppModel;weak var web:WKWebView?;var ready=false;var capturing=false;var lastSelectionRequest:UUID?
         init(_ model:AppModel){self.model=model}
         func update(){guard ready else{return};let data:[String:Any]=["language":AppLanguage.code,"hasImageSelection":model.selectedImageRegion != nil,"selectionRequest":model.selectionRequest.uuidString,"theme":model.theme,"title":model.selectedDocument?.title ?? "","selectionLabel":model.selectedImage != nil ? L("已框选图表"):model.pending?.quote.isEmpty==false ? String(model.selectionText.prefix(90)):model.pageLabel.isEmpty ? L("当前文章"):L("当前第 ")+model.pageLabel,"provider":model.tutorProvider,"level":model.tutorLevel,"busy":model.tutorBusy,"status":model.tutorStatus,"messages":model.tutorMessages.map{message in ["id":message.id,"role":message.role,"text":InkPlan.visibleText(message.text),"inkCount":model.currentSlideProject.marks.filter{mark in mark.answerID==message.id}.count,"saved":message.saved,"page":message.page] as [String:Any]}]
-            if let bytes=try? JSONSerialization.data(withJSONObject:data),let json=String(data:bytes,encoding:.utf8){web?.evaluateJavaScript("window.teacher?.receive(\(json))",completionHandler:nil)}
+            var payload = data
+            payload["documentID"] = model.selectedID ?? ""
+            payload["practiceBusy"] = model.practiceBusy
+            payload["practiceStatus"] = model.practiceStatus
+            if let bytes = try? JSONEncoder().encode(model.currentPractice), let object = try? JSONSerialization.jsonObject(with: bytes) { payload["practice"] = object }
+            if let bytes=try? JSONSerialization.data(withJSONObject:payload),let json=String(data:bytes,encoding:.utf8){web?.evaluateJavaScript("window.teacher?.receive(\(json))",completionHandler:nil)}
         }
         func userContentController(_ userContentController:WKUserContentController,didReceive message:WKScriptMessage){guard let data=message.body as? [String:Any],let type=data["type"] as? String else{return}
             switch type {
             case "ready":ready=true;update()
+            case "practiceAnswer":
+                if let doc = data["documentID"] as? String, let id = data["id"] as? String {
+                    model.submitPractice(documentID: doc, questionID: id, selected: data["selected"] as? Int, revealed: data["revealed"] as? Bool ?? false)
+                }
+            case "practiceRetry": if data["documentID"] as? String == model.selectedID, let id = data["id"] as? String { model.retryPractice(jobID: id) }
+            case "practiceCancel": if data["documentID"] as? String == model.selectedID, let id = data["id"] as? String { model.cancelPractice(jobID: id) }
+            case "practiceDispute": if data["documentID"] as? String == model.selectedID, let id = data["id"] as? String { model.disputePractice(questionID: id) }
+            case "practiceReview": if data["documentID"] as? String == model.selectedID, let id = data["id"] as? String { model.openStudyReview(topicID: id) }
             case "placeVisual":if let id=data["id"] as? String{captureVisual(id:id,newPage:data["newPage"] as? Bool ?? false)}
             case "send":if let text=data["question"] as? String{model.sendTeacher(text)}
             case "stop":model.stopTeacher()

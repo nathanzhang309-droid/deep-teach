@@ -37,7 +37,8 @@ struct StudyNotesView: View {
 
     @State private var selectedID: String?
     @State private var query = ""
-    @State private var focusOnly = false
+    @State private var filterMode = 0
+    private var focusOnly: Bool { filterMode == 1 }
 
     private static let rawID = "__unsorted_turns__"
 
@@ -84,9 +85,10 @@ struct StudyNotesView: View {
         let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         return topics.filter { t in
             if focusOnly && !isFocus(t) { return false }
+            if filterMode == 2 && !PracticeEngine.needsReview(topicID: t.id, book: notebook) { return false }
             if q.isEmpty { return true }
             let hay = ([t.title, t.summary, t.personalNote, t.reviewQuestion] + t.points + t.confusions
-                       + turns(of: t).map(\.question)).joined(separator: "\n").lowercased()
+                       + turns(of: t).map(\.question) + [PracticeEngine.markdown(topicID: t.id, book: notebook)]).joined(separator: "\n").lowercased()
             return hay.contains(q)
         }
     }
@@ -122,7 +124,7 @@ struct StudyNotesView: View {
         .tint(p.accent)
         .background(p.bg)
         .onChange(of: model.studyReviewRequest) { _ in selectedID = model.studyReviewTopicID ?? filtered.first?.id }
-        .onChange(of: model.selectedID) { _ in selectedID = nil; query = ""; focusOnly = false }
+        .onChange(of: model.selectedID) { _ in selectedID = nil; query = ""; filterMode = 0 }
         .onChange(of: filtered.map(\.id)) { ids in
             if let selectedID, !ids.contains(selectedID), selectedID != Self.rawID { self.selectedID = ids.first }
         }
@@ -154,6 +156,14 @@ struct StudyNotesView: View {
                                 .font(.caption).foregroundColor(p.muted)
                         }
                         focusSection
+                        if !model.weakStudyTopics.isEmpty {
+                            Text(L("需要复习的知识点")).font(.headline)
+                            ForEach(model.weakStudyTopics) { topic in
+                                Button(topic.title) { model.openStudyReview(topicID: topic.id) }
+                            }
+                            Text(L("依据首次答错或看答案记录；连续两题独立答对后移出此列表。"))
+                                .font(.caption).foregroundColor(p.muted)
+                        }
                     }
                     .padding(12)
                 }
@@ -281,9 +291,10 @@ struct StudyNotesView: View {
             TextField(L("搜索知识点、问题、笔记"), text: $query)
                 .textFieldStyle(.roundedBorder)
                 .padding(.horizontal, 10).padding(.top, 10)
-            Picker("", selection: $focusOnly) {
-                Text(L("全部")).tag(false)
-                Text(L("重点追问")).tag(true)
+            Picker("", selection: $filterMode) {
+                Text(L("全部")).tag(0)
+                Text(L("重点追问")).tag(1)
+                Text(L("需要复习")).tag(2)
             }
             .pickerStyle(.segmented).labelsHidden()
             .padding(.horizontal, 10)
@@ -294,7 +305,7 @@ struct StudyNotesView: View {
                         topicRow(t).tag(Optional(t.id))
                     }
                 }
-                if !unsorted.isEmpty && !focusOnly {
+                if !unsorted.isEmpty && filterMode == 0 {
                     Section(L("未归类")) {
                         Text(L("原始问答（{0}）", String(describing: unsorted.count))).tag(Optional(Self.rawID))
                     }
@@ -303,8 +314,8 @@ struct StudyNotesView: View {
             .listStyle(.sidebar)
             .scrollContentBackground(.hidden)
             .overlay {
-                if filtered.isEmpty && (focusOnly || unsorted.isEmpty) {
-                    Text(focusOnly ? L("暂无重点追问") : L("没有匹配的知识点"))
+                if filtered.isEmpty && (filterMode != 0 || unsorted.isEmpty) {
+                    Text(filterMode == 2 ? L("暂无需要复习的作答记录") : focusOnly ? L("暂无重点追问") : L("没有匹配的知识点"))
                         .font(.callout).foregroundColor(p.muted)
                 }
             }
@@ -319,6 +330,7 @@ struct StudyNotesView: View {
                 Spacer(minLength: 4)
                 if isFocus(t) { Image(systemName: "star.fill").font(.caption2).foregroundColor(p.accent) }
                 if t.mastered { Image(systemName: "checkmark.circle").font(.caption2).foregroundColor(p.accent) }
+                if PracticeEngine.needsReview(topicID: t.id, book: notebook) { Image(systemName: "arrow.clockwise.circle").font(.caption2).foregroundColor(.orange) }
             }
             Text(t.refined ? L("{0} 次提问", String(describing: askCount(t))) : L("原始问答 · 待整理"))
                 .font(.caption).foregroundColor(p.muted)
@@ -384,6 +396,8 @@ struct StudyNotesView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(p.panel).cornerRadius(8)
                 }
+
+                StudyPracticeView(model: model, topicID: t.id).id((model.selectedID ?? "") + t.id)
 
                 DisclosureGroup {
                     VStack(alignment: .leading, spacing: 10) {

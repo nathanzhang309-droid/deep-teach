@@ -9,6 +9,7 @@ import 'katex/dist/katex.min.css';
 import {DerivationCard,LewisCard,ConceptMapCard} from './ScienceCards';
 import {auditLewis} from './scienceValidation';
 import './science.css';
+import {PracticeContext, PracticeQuiz} from './Practice';
 
 function VisualClip({children}:{children:React.ReactNode}) {
   React.useContext(LanguageContext);
@@ -43,10 +44,10 @@ class VisualBoundary extends React.Component<{children:React.ReactNode},{error:b
 }
 function Quiz({block}:{block:Block}){
   React.useContext(LanguageContext);
-  const [selected,setSelected]=useState<number>();
+  const context=React.useContext(PracticeContext);
   const options=Array.isArray(block.options)?block.options.slice(0,8):[];
-  return <div className="quiz"><strong>{block.question}</strong><div>{options.map((o:Block,i:number)=><button key={i} className={'quiz-option'+(selected===i?(o.correct?' correct':' incorrect'):'')} aria-label={`${String.fromCharCode(65+i)}. ${o.label}`} onClick={()=>setSelected(i)}>{o.label}</button>)}</div>
-    {selected!==undefined&&<div className="quiz-feedback" role="status">{options[selected]?.correct?t("答对了。"):t("再想一想。")} {options[selected]?.feedback || (options[selected]?.correct?block.explanation:t("可以点另一项重试，或在下面问老师。"))}</div>}</div>;
+  const question=context.data.questions.find(q=>q.origin==='teacher'&&q.turnID===context.answerID&&q.prompt===block.question&&JSON.stringify(q.options)===JSON.stringify(options.map(o=>o.label)));
+  return question?<PracticeQuiz question={question}/>:<div className="quiz"><strong>{block.question}</strong><p>{t("题目尚未就绪；请等待讲解结束，或让老师重新出题。")}</p></div>;
 }
 function MermaidView({code}:{code:string}){
   React.useContext(LanguageContext);

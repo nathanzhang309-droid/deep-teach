@@ -1,0 +1,98 @@
+{
+  "version": "1.4.0",
+  "date": "2026-10-21",
+  "portableChecks": 117,
+  "nativeRuns": {
+    "practice-zh": {
+      "checks": {
+        "auto_off_queues_without_request": true,
+        "completed_teacher_quiz_registered": true,
+        "duplicate_answer_does_not_overwrite_or_enqueue_twice": true,
+        "durable_attempt_and_immediate_personal_review": true,
+        "failed_disk_write_rolls_back_and_blocks_generation": true,
+        "generated_followup_appears_in_teacher_chat": true,
+        "learning_update_preserves_self_assessment_and_manual_note": true,
+        "obsidian_manual_supplement_survives_updated_review": true,
+        "real_web_quiz_click_persists_wrong_answer": true,
+        "reload_restores_practice_without_duplicate_questions": true,
+        "reload_retains_wrong_attempt": true,
+        "review_sync_includes_actual_choice_and_source": true,
+        "review_window_opens_and_resizes": true,
+        "stale_web_submission_cannot_cross_documents": true,
+        "web_feedback_acknowledges_native_state": true
+      },
+      "error": "",
+      "language": "zh",
+      "passed": true
+    },
+    "practice-en-live": {
+      "checks": {
+        "auto_off_queues_without_request": true,
+        "completed_teacher_quiz_registered": true,
+        "duplicate_answer_does_not_overwrite_or_enqueue_twice": true,
+        "durable_attempt_and_immediate_personal_review": true,
+        "failed_disk_write_rolls_back_and_blocks_generation": true,
+        "generated_followup_appears_in_teacher_chat": true,
+        "learning_update_preserves_self_assessment_and_manual_note": true,
+        "live_followup_and_personalized_review": true,
+        "obsidian_manual_supplement_survives_updated_review": true,
+        "real_web_quiz_click_persists_wrong_answer": true,
+        "reload_restores_practice_without_duplicate_questions": true,
+        "reload_retains_wrong_attempt": true,
+        "review_sync_includes_actual_choice_and_source": true,
+        "review_window_opens_and_resizes": true,
+        "stale_web_submission_cannot_cross_documents": true,
+        "web_feedback_acknowledges_native_state": true
+      },
+      "error": "",
+      "language": "en",
+      "passed": true
+    },
+    "practice-zh-live": {
+      "checks": {
+        "auto_off_queues_without_request": true,
+        "completed_teacher_quiz_registered": true,
+        "duplicate_answer_does_not_overwrite_or_enqueue_twice": true,
+        "durable_attempt_and_immediate_personal_review": true,
+        "failed_disk_write_rolls_back_and_blocks_generation": true,
+        "generated_followup_appears_in_teacher_chat": true,
+        "learning_update_preserves_self_assessment_and_manual_note": true,
+        "live_followup_and_personalized_review": true,
+        "obsidian_manual_supplement_survives_updated_review": true,
+        "real_web_quiz_click_persists_wrong_answer": true,
+        "reload_restores_practice_without_duplicate_questions": true,
+        "reload_retains_wrong_attempt": true,
+        "review_sync_includes_actual_choice_and_source": true,
+        "review_window_opens_and_resizes": true,
+        "stale_web_submission_cannot_cross_documents": true,
+        "web_feedback_acknowledges_native_state": true
+      },
+      "error": "",
+      "language": "zh",
+      "passed": true
+    }
+  },
+  "scope": "Synthetic material only. Not a general assessment of subject accuracy; no network tests from mainland China.",
+  "finalBundleSmoke": {
+    "checks": {
+      "auto_off_queues_without_request": true,
+      "completed_teacher_quiz_registered": true,
+      "duplicate_answer_does_not_overwrite_or_enqueue_twice": true,
+      "durable_attempt_and_immediate_personal_review": true,
+      "failed_disk_write_rolls_back_and_blocks_generation": true,
+      "generated_followup_appears_in_teacher_chat": true,
+      "learning_update_preserves_self_assessment_and_manual_note": true,
+      "obsidian_manual_supplement_survives_updated_review": true,
+      "real_web_quiz_click_persists_wrong_answer": true,
+      "reload_restores_practice_without_duplicate_questions": true,
+      "reload_retains_wrong_attempt": true,
+      "review_sync_includes_actual_choice_and_source": true,
+      "review_window_opens_and_resizes": true,
+      "stale_web_submission_cannot_cross_documents": true,
+      "web_feedback_acknowledges_native_state": true
+    },
+    "error": "",
+    "language": "en",
+    "passed": true
+  }
+}

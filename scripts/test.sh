@@ -11,6 +11,8 @@ build/tests/layout "$sandbox"
 
 swiftc -swift-version 5 -module-cache-path build/swift-cache Sources/Localization.swift Sources/Core.swift Tests/AdversarialCoreTests.swift -o build/tests/adversarial
 DEEP_TEACH_LANGUAGE=zh DEEP_TEACH_TEST_RESOURCES="$PWD/Resources" build/tests/adversarial
-node --test Tests/AdversarialPrompts.test.mjs
+swiftc -swift-version 5 -module-cache-path build/swift-cache Sources/Localization.swift Sources/Core.swift Sources/StudyCore.swift Sources/PracticeCore.swift Tests/PracticeTests.swift -o build/tests/practice
+DEEP_TEACH_LANGUAGE=zh build/tests/practice
+node --test Tests/AdversarialPrompts.test.mjs Tests/PracticePrompts.test.mjs
 npm --prefix TeacherUI test
 node Tests/check-localization.mjs

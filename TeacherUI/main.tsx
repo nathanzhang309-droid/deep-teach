@@ -4,6 +4,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Answer } from './Answer';
 import './style.css';
+import {PracticeContext,PracticeFollowups,PracticeData} from './Practice';
 const StableAnswer = React.memo(Answer);
 
 type Theme = '纸白' | '暖纸' | '夜读';
@@ -20,6 +21,10 @@ type Message = {
 };
 
 type Payload = {
+  documentID: string;
+  practice?: PracticeData;
+  practiceBusy?: boolean;
+  practiceStatus?: string;
   language: string;
   hasImageSelection: boolean;
   selectionRequest: string;
@@ -34,6 +39,7 @@ type Payload = {
 };
 
 type Outgoing =
+  | {type:'practiceAnswer'|'practiceRetry'|'practiceCancel'|'practiceDispute'|'practiceReview';documentID:string;id:string;selected?:number|null;revealed?:boolean}
   | { type: 'placeVisual'; id: string; newPage: boolean }
   | { type: 'focusSelection'; request: string }
   | { type: 'reselect' | 'clearSelection' }
@@ -56,6 +62,7 @@ declare global {
 const post = (message: Outgoing) => window.webkit?.messageHandlers?.teacher?.postMessage(message);
 
 const initialState: Payload = {
+  documentID: '',
   language: 'zh', hasImageSelection: false, selectionRequest: "",
   theme: '纸白',
   title: '',
@@ -117,6 +124,7 @@ function MessageView({ message, streaming, language }: { message: Message; strea
   return (
     <article className={`message assistant${streaming ? ' streaming' : ''}`}>
       <StableAnswer text={message.text} />
+      <PracticeFollowups />
       <div className="message-actions">
         {page}
         {!!message.inkCount && <><span className="meta" style={{color:'#C23B2E'}}>{t("已在课件上标注，可编辑或撤销")}</span><button className="save-button" onClick={()=>post({type:'undoInk',id:message.id})}>{t("撤销批注")}</button></>}
@@ -266,7 +274,9 @@ function App() {
           <EmptyState busy={busy} hasDocument={Boolean(state.title)} />
         ) : (
           messages.map((m, index) => (
-            <MessageView key={m.id} message={m} language={state.language} streaming={busy && m.role === 'assistant' && index === messages.length - 1} />
+            <PracticeContext.Provider key={state.documentID+':'+m.id} value={{documentID:state.documentID,answerID:m.id,data:state.practice??{questions:[],attempts:[],jobs:[]}}}>
+             <MessageView message={m} language={state.language} streaming={busy && m.role === 'assistant' && index === messages.length - 1} />
+            </PracticeContext.Provider>
           ))
         )}
         {waiting && (
@@ -281,6 +291,7 @@ function App() {
           {status}
         </div>
       )}
+      {state.practiceStatus&&<div className="status" role="status">{state.practiceStatus}</div>}
 
       <footer className="composer" data-selection={state.hasImageSelection || undefined}>
         {state.hasImageSelection && <div className="selection-bar" role="group" aria-label={t("已框选区域")}>

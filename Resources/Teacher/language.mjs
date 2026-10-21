@@ -19,6 +19,7 @@ const errors={
  '最多使用选区和整页两张图片。':'Use at most two images: the selection and the full page.',
  '图片格式或大小不支持，请缩小选区。':'Unsupported image format or size. Select a smaller area.',
  '笔记整理请求不完整':'The study-note request is incomplete.',
+ '练习请求不完整':'The practice request is incomplete.',
  '请求过大':'The request is too large.',
  '已停止生成。':'Generation stopped.',
  '讲解超时，请缩小选区后重试。':'The explanation timed out. Select a smaller area and retry.',

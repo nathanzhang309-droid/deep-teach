@@ -6,11 +6,21 @@
 
 **Understand your slides, annotate them in place, and review with notes shaped by your questions.**
 
-deep-teach（伴读）是一个原生 macOS 阅读与学习应用：打开 PDF 或 PPT，框出不懂的地方，老师在旁边解释，并直接在原页上用红笔圈注。学习过程会整理成可编辑的个人笔记，可以大屏复习、同步到 Obsidian，也能导出带批注的 PDF。
+deep-teach（伴读）是一个原生 macOS 阅读与学习应用：打开 PDF 或 PPT，框出不懂的地方，老师在旁边解释，并直接在原页上用红笔圈注。单选自测答错后，老师会追加同知识点练习，并把实际错项、解法和复习步骤整理进个人笔记。支持大屏复习、Obsidian 同步和带批注的 PDF 导出。
 
-deep-teach is a native macOS reading and study app. Open a PDF or presentation, select what you don’t understand, and ask an AI tutor that explains alongside the page and adds editable red-pen annotations. Turn your questions into personalized study notes, review them in a separate window, sync them to Obsidian, or export an annotated PDF.
+deep-teach is a native macOS reading and study app. Open a PDF or presentation, select what you don’t understand, and ask an AI tutor that explains alongside the page and adds editable red-pen annotations. After an incorrect quiz answer, practice the same concept with new questions and review notes based on your actual attempts. Review in a separate window, sync to Obsidian, or export an annotated PDF.
 
 [下载安装 / Download](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) · [完整英文介绍 / Full English guide](README.en.md) · [使用指南](docs/USAGE.md) · [隐私说明](PRIVACY.md)
+
+## 1.4.0：从错题到复习笔记
+
+1. **先答，再练**：单选自测记录首次作答；答错或查看答案后，先保存复习要点，再自动生成最多两道同知识点变式。
+2. **笔记针对你的选择**：保留原题、所选答案、参考解法、复习步骤和来源页码。在「学习笔记 → 大屏复习」筛选“需要复习”，也可导出 Markdown 或同步 Obsidian。
+3. **学习节奏自己控制**：可暂停、重试或关闭自动追加。参考答案有误时可以标记待核对；连续两次后续独立首次答对会清除复习标记，不改变你的自评掌握状态。
+
+自动追加默认开启，会使用当前 Codex / Claude 订阅额度，可在知识点练习区单独关闭。目前支持单选自测，尚不支持自由文本或手写解题自动评分。
+
+[下载 1.4.0](https://github.com/nathanzhang309-droid/deep-teach/releases/tag/v1.4.0) · [本版验证记录](docs/PRACTICE-VALIDATION.md)
 
 ## 45 秒了解伴读
 
@@ -30,6 +40,7 @@ https://github.com/user-attachments/assets/d579cd87-2e03-44de-8e58-6c62cd92ab7f
 - **框选提问**：框住公式、图片或段落后直接进入聊天，选区留在课件上。
 - **老师拿红笔**：回答完成后自动圈注、划线、画箭头和写透明短注；能编辑、按回答撤销、保存和导出。
 - **学科图示**：逐步数学推导、Lewis 结构、概念关系图、函数滑块、图表和自测题。复杂图示可另加讲解页。
+- **错题复练与个性化复习**：单选自测保存首次作答，答错或看答案后自动追加最多两道同知识点变式；实际错题、参考解法和复习步骤进入笔记，可在大屏按“需要复习”筛选并同步 Obsidian。
 - **个人学习笔记**：相同知识点的追问归到一起，保留原问答与页码；支持个人补充、主动标记掌握和独立复习窗口。
 - **Obsidian 同步**：单向写入本地 Markdown，保护手写区域；冲突另存，避免覆盖。
 - **可调工作区**：书房、课件、老师／笔记栏可拖动调整比例，窗口布局自动记住。
@@ -46,7 +57,7 @@ https://github.com/user-attachments/assets/d579cd87-2e03-44de-8e58-6c62cd92ab7f
 
 需要 **Apple Silicon Mac（M1 或更新）和 macOS 13+**。当前没有 Intel、Windows 或 Linux 版本。
 
-1. 从 [Releases](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) 下载 `deep-teach-1.3.0-macOS-arm64.zip`，解压后把 `伴读.app` 移到“应用程序”。
+1. 从 [Releases](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) 下载 `deep-teach-1.4.0-macOS-arm64.zip`，解压后把 `伴读.app` 移到“应用程序”。
 2. 应用采用 ad-hoc 签名，**尚未 Apple 公证**。macOS 可能提示无法验证开发者；确认下载来源后，可在“系统设置 → 隐私与安全”按系统提示允许打开，或自行从源码构建。
 3. 导入课件开始阅读。PPT/PPTX 转换需要本机安装 Keynote；也可以先在 PowerPoint 导出 PDF。
 4. AI 功能另需安装并登录 [Codex CLI](https://developers.openai.com/codex/cli/) 或 [Claude Code](https://code.claude.com/docs/en/overview)，在老师面板选择已登录的一方。CLI 未登录时，阅读仍可使用。
@@ -85,7 +96,7 @@ GitHub Actions 会运行这些测试、重建前端并编译 Mac App。原生界
 
 ## 数据和隐私
 
-数据保存在 `~/Library/Application Support/BanduLibrary/`。没有伴读账号、托管后端或内置遥测。**调用老师时，相关课件和对话会发送给你选择的模型服务**；自动学习笔记整理也会使用该服务。完整范围见 [PRIVACY.md](PRIVACY.md)。不要把资料库、课程文件、聊天、登录配置或密钥提交到仓库。
+数据保存在 `~/Library/Application Support/BanduLibrary/`。没有伴读账号、托管后端或内置遥测。**调用老师时，相关课件和对话会发送给你选择的模型服务**；自动学习笔记整理，以及开启自动追加后生成变式与复习讲解，也会使用该服务和订阅额度；两项可以分别关闭。完整范围见 [PRIVACY.md](PRIVACY.md)。不要把资料库、课程文件、聊天、登录配置或密钥提交到仓库。
 
 旧版资料可继续读取，原始 PDF/PPT 不修改。导出的 PDF 将批注固化；继续编辑请保留伴读资料库并使用“文件 → 导出资料库备份”。
 

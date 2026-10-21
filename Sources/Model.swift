@@ -13,6 +13,9 @@ struct SelectionAnchor:Codable {var quote:String;var regions:[PDFRegion]=[];var 
     @Published var studyBusy=false; @Published var showStudyNotes=true
     @Published var studyReviewRequest=UUID();var studyReviewTopicID:String?
     var studyProcess:TeacherProcess?; var studyManualDocument:String?;var studyWritable=true;var studyWindow:NSWindow?
+    @Published var practiceBusy = false; @Published var practiceStatus = ""
+    var practiceProcess: TeacherProcess?; var activePracticeJob: (String, String)?
+    var practicePersistenceBlocked = false
     @Published var selectedImageRegion:PDFRegion?;@Published var selectionRequest=UUID();
     @Published var showTutor=false; @Published var boxSelection=false
     @Published var tutorBusy=false; @Published var tutorStatus=L("选中文字或框住图表，再问老师")
@@ -38,7 +41,7 @@ struct SelectionAnchor:Codable {var quote:String;var regions:[PDFRegion]=[];var 
     }.sorted{$0.lastOpenedAt>$1.lastOpenedAt}}
     init(store:LibraryStore){self.store=store;self.layout=PaneLayout(root:store.root);library=store.state.documents;highlights=store.state.highlights;let p=store.state.preferences;vaultPath=p.vaultPath;autoSync=p.autoSync;theme=p.theme;fontSize=p.fontSize;Self.shared=self
         if library.isEmpty {do{_ = try store.addArticle(title:L("让读过的内容，成为自己的知识"),html:Self.welcome,text:L("欢迎使用伴读，本地阅读、划线批注、同步 Obsidian。"),kind:"html",isWelcome:true);library=store.state.documents}catch{errorMessage=error.localizedDescription}}
-        loadTeaching();loadStudy();loadSlides();selectedID=library.sorted{$0.lastOpenedAt>$1.lastOpenedAt}.first?.id;status=store.recoveryNotice ?? L("资料已保存在本机")
+        loadTeaching();loadStudy();registerExistingPractice();loadSlides();selectedID=library.sorted{$0.lastOpenedAt>$1.lastOpenedAt}.first?.id;status=store.recoveryNotice ?? L("资料已保存在本机")
     }
     static var welcome:String { if AppLanguage.code=="en" { return """
     <h2>Welcome to deep-teach</h2><p>Read locally, highlight passages and build your own study notes.</p>

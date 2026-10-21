@@ -37,6 +37,7 @@ import UniformTypeIdentifiers
               let i = messages.firstIndex(where:{$0.id == answerID}), i > 0 else { return }
         var book = study.notebooks[documentID] ?? StudyNotebook()
         if StudyEngine.record(&book,question:messages[i-1],answer:messages[i]) {
+            PracticeEngine.register(answer: messages[i], in: &book)
             study.notebooks[documentID] = book
             studyStatus = study.autoEnabled ? L("问答已记录，等待整理") : L("问答已记录，自动整理已关闭")
             if saveStudy() { processStudyQueue() }
@@ -48,6 +49,7 @@ import UniformTypeIdentifiers
         var book = study.notebooks[id] ?? StudyNotebook(); var count = 0
         for i in messages.indices where i > 0 {
             if StudyEngine.record(&book,question:messages[i-1],answer:messages[i]) { count += 1 }
+            if messages[i].role == "assistant" { PracticeEngine.register(answer: messages[i], in: &book) }
         }
         study.notebooks[id] = book
         studyStatus = count > 0 ? L("已补录 {0} 轮问答", String(describing: count)) : L("没有尚未记录的完整问答")
@@ -70,7 +72,9 @@ import UniformTypeIdentifiers
         if saveStudy(sync:false), enabled { processStudyQueue() }
     }
     func processStudyQueue() {
-        guard studyWritable, !tutorBusy, !studyBusy, study.autoEnabled || studyManualDocument != nil else { return }
+        guard studyWritable, !tutorBusy, !studyBusy, !practiceBusy else { return }
+        if processPracticeQueue() { return }
+        guard study.autoEnabled || studyManualDocument != nil else { return }
         let docIDs=studyManualDocument.map{[$0]} ?? study.notebooks.keys.sorted()
         var task: (String,StudyTurn)?
         for id in docIDs { if let turn=study.notebooks[id]?.turns.first(where:{$0.state == "pending"}) { task=(id,turn);break } }

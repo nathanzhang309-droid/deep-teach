@@ -12,8 +12,9 @@ struct StudyTopic: Codable, Identifiable {
 struct StudyNotebook: Codable {
     var topics: [StudyTopic] = []; var turns: [StudyTurn] = []; var visitedPages: [Int] = []
     var completed = false
+    var practice: PracticeNotebook? // Optional for existing v1 notebooks.
 }
-struct StudyArchive: Codable { var version = 1; var autoEnabled = true; var notebooks: [String: StudyNotebook] = [:] }
+struct StudyArchive: Codable { var version = 1; var autoEnabled = true; var notebooks: [String: StudyNotebook] = [:]; var autoPractice: Bool? }
 struct StudyRefinement: Codable {
     var topicID: String?; var title: String; var summary: String
     var points: [String]; var confusions: [String]; var reviewQuestion: String
@@ -48,6 +49,7 @@ enum StudyEngine {
             for id in source.turnIDs where !target.turnIDs.contains(id) { target.turnIDs.append(id) }
             if !source.personalNote.isEmpty { target.personalNote += (target.personalNote.isEmpty ? "" : "\n\n") + source.personalNote }
             for i in book.turns.indices where book.turns[i].topicID == oldID { book.turns[i].topicID = targetID }
+            PracticeEngine.mergeTopic(oldID, into: targetID, in: &book)
         }
         target.title = refined.title; target.summary = refined.summary; target.points = refined.points
         target.confusions = refined.confusions; target.reviewQuestion = refined.reviewQuestion; target.refined = true
@@ -71,6 +73,7 @@ enum StudyEngine {
                 text += "<details>\n<summary>\(clean(turn.question).replacingOccurrences(of:"<",with:"&lt;").replacingOccurrences(of:">",with:"&gt;"))</summary>\n\n" + clean(turn.answer) + "\n\n</details>\n\n[\(location)](shiye://document/\(document.id)?page=\(turn.page))\n\n"
             }
             if !topic.personalNote.isEmpty { text += L("**我的补充**\n\n") + clean(topic.personalNote) + "\n\n" }
+            text += PracticeEngine.markdown(topicID: topic.id, book: book)
         }
         return text
     }

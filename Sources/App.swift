@@ -29,6 +29,7 @@ import Darwin
             if env["BANDU_ADVERSARIAL_TEST"]=="1"{Task{await AdversarialNativeTests.run(model:model,window:window)}}
             if env["BANDU_INK_TEST"]=="1"{Task{await InkTests.run(model:model,window:window)}}
             if env["BANDU_SLIDE_TEST"]=="1"{Task{await SlideTests.run(model:model,window:window)}}
+            if env["BANDU_PRACTICE_TEST"]=="1"{Task{await PracticeNativeTests.run(model:model,window:window)}}
             if env["BANDU_STUDY_TEST"]=="1"{Task{await StudyTests.run(model:model,window:window)}}
             if env["BANDU_LAYOUT_TEST"]=="1"{Task{await LayoutIntegrationTests.run(model:model,window:window)}}
             if env["BANDU_INTEGRATION_TEST"]=="1"{Task{await IntegrationTests.run(model:model,window:window)}}
@@ -49,6 +50,6 @@ import Darwin
     @objc func settings(){model.showSettings=true};@objc func hide(){NSApp.hide(nil)};@objc func quit(){NSApp.terminate(nil)};@objc func importFile(){model.importFiles()};@objc func importURL(){model.showURLImport=true};@objc func sync(){model.syncNow()};@objc func backup(){model.exportBackup()}
     func application(_ application:NSApplication,open urls:[URL]){guard model != nil else{initialURLs.append(contentsOf:urls);return};for url in urls{if url.scheme=="shiye"{model.handleDeepLink(url)}else if url.isFileURL{Task{await model.importURLs([url])}}};window.makeKeyAndOrderFront(nil);NSApp.activate(ignoringOtherApps:true)}
     func applicationShouldHandleReopen(_ sender:NSApplication,hasVisibleWindows flag:Bool)->Bool{window?.makeKeyAndOrderFront(nil);return true}
-    func applicationWillTerminate(_ notification:Notification){model?.saveSlides();model?.pauseStudyProcess();model?.saveStudy(sync:false);model?.studyWindow?.saveFrame(usingName:"BanduStudyReview");model?.layout.save();window?.saveFrame(usingName:"ShiyeMain");model?.saveTeaching();model?.teacherProcess?.stop();model?.persist(sync:false);if model?.autoSync==true{model?.syncNow()}}
+    func applicationWillTerminate(_ notification:Notification){model?.saveSlides();model?.pausePracticeProcess();model?.pauseStudyProcess();model?.saveStudy(sync:false);model?.studyWindow?.saveFrame(usingName:"BanduStudyReview");model?.layout.save();window?.saveFrame(usingName:"ShiyeMain");model?.saveTeaching();model?.teacherProcess?.stop();model?.persist(sync:false);if model?.autoSync==true{model?.syncNow()}}
     func applicationShouldTerminateAfterLastWindowClosed(_ sender:NSApplication)->Bool{false}
 }

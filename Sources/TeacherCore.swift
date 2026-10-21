@@ -72,7 +72,7 @@ func imageURL(_ image:NSImage)->String? {
     func askTeacher(){sendTeacher(L("请讲解我选中的内容；如果没有选区，就从当前页或文章开始，一次讲清楚一个知识点。"))}
     func sendTeacher(_ question:String){
         guard !tutorBusy,!question.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty,question.trimmingCharacters(in:.whitespacesAndNewlines).unicodeScalars.count<=5000 else{return}
-        pauseStudyProcess();showTutor=true;showNotes=true;tutorBusy=true;tutorStatus=L("正在准备当前内容…")
+        pausePracticeProcess();pauseStudyProcess();showTutor=true;showNotes=true;tutorBusy=true;tutorStatus=L("正在准备当前内容…")
         let requestID=UUID();teacherRequestID=requestID;let responseLanguage=AppLanguage.code
         Task {do{
             guard teacherRequestID==requestID else{return}

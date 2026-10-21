@@ -4,9 +4,19 @@
 
 **Understand your slides, annotate them in place, and review with notes shaped by your questions.**
 
-deep-teach is a native macOS reading and study app. Open a PDF or presentation, select what you don’t understand, and ask an AI tutor that explains alongside the page and adds editable red-pen annotations. Turn your questions into personalized study notes, review them in a separate window, sync them to Obsidian, or export an annotated PDF.
+deep-teach is a native macOS reading and study app. Open a PDF or presentation, select what you don’t understand, and ask an AI tutor that explains alongside the page and adds editable red-pen annotations. After an incorrect quiz answer, practice the same concept with new questions and review notes based on your actual attempts. Review in a separate window, sync to Obsidian, or export an annotated PDF.
 
 [Download](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) · [中文](README.md) · [Privacy](PRIVACY.md)
+
+## New in 1.4.0: turn mistakes into a review plan
+
+1. **Answer, then practise.** Single-choice quizzes save your first attempt. An incorrect answer or revealing the answer saves a review immediately, then generates up to two same-topic variations.
+2. **Notes based on your choices.** Keep the original question, your selected answer, the reference explanation, review steps and source page. Open the study-notes review window and filter **Needs review**, export Markdown, or sync to Obsidian.
+3. **Set your own pace.** Pause, retry or turn off automatic follow-ups. Flag a disputed reference answer to exclude it from review tracking. Two subsequent independently correct first attempts clear the review flag without changing your self-assessed mastery.
+
+Automatic follow-ups are enabled by default and use your selected Codex or Claude subscription allowance. Turn them off separately in a topic’s practice section. This release supports single-choice practice; it does not grade free-text or handwritten solutions.
+
+[Download 1.4.0](https://github.com/nathanzhang309-droid/deep-teach/releases/tag/v1.4.0) · [Validation and limits](docs/PRACTICE-VALIDATION.md)
 
 ## Meet deep-teach in 45 seconds
 
@@ -21,6 +31,7 @@ https://github.com/user-attachments/assets/accb2c11-6abc-42bf-ab44-21cfe720c1e7
 - Select a region and ask a tutor without leaving the page.
 - Automatically add editable red circles, arrows, underlines and short labels after an answer. Undo a response's annotations or export an annotated PDF.
 - See stepwise math, Lewis structures, concept maps, charts and quizzes.
+- Single-choice quizzes save the first attempt. An incorrect answer or revealing the answer queues up to two same-topic variations; mistakes, explanations and review steps feed personalized notes. Filter “Needs review” in the review window and sync to Obsidian.
 - Keep personalized study notes with source pages, follow-up questions and your own additions. Review in a separate window.
 - Sync Markdown to a local Obsidian vault while protecting handwritten sections.
 
@@ -28,7 +39,7 @@ https://github.com/user-attachments/assets/accb2c11-6abc-42bf-ab44-21cfe720c1e7
 
 Apple Silicon Mac, macOS 13+. PowerPoint import requires Keynote, or export to PDF yourself. Reading and note-taking work offline. **AI features require your own supported Codex or Claude subscription and CLI login.** They consume subscription allowances and are not a free hosted model service. Bandu excludes API-key authentication for its tutor subprocesses.
 
-Download the Mac archive from Releases and move the app to Applications. Builds are ad-hoc signed and **not notarized by Apple**; macOS may require approval in Privacy & Security. You can also build locally:
+Download `deep-teach-1.4.0-macOS-arm64.zip` from [Releases](https://github.com/nathanzhang309-droid/deep-teach/releases/tag/v1.4.0), unzip it, and move `伴读.app` to Applications. Builds are ad-hoc signed and **not notarized by Apple**; macOS may require approval in Privacy & Security. You can also build locally:
 
 ```bash
 xcode-select --install
@@ -52,7 +63,7 @@ See the [bilingual adversarial test report](docs/VALIDATION.md) for measured cov
 
 ## Privacy and limitations
 
-Documents, notes and chat history live in `~/Library/Application Support/BanduLibrary/`. There is no Bandu cloud backend or built-in telemetry. Tutor requests send relevant lesson images/text, notes and conversation context to your selected provider; optional background note organization also uses that provider. See [PRIVACY.md](PRIVACY.md).
+Documents, notes and chat history live in `~/Library/Application Support/BanduLibrary/`. There is no Bandu cloud backend or built-in telemetry. Tutor requests send relevant lesson images/text, notes and conversation context to your selected provider; background note organization and automatic follow-up practice also use that provider and your subscription allowance. Each has a separate off switch. See [PRIVACY.md](PRIVACY.md).
 
 AI explanations and placements can be wrong. Image-based pages depend on visual recognition; there is no standalone offline OCR. Exported PDF annotations are flattened; keep the local library for editing. Inserted charts/formulas remain static images. There is no DRM support, built-in cloud sync, Intel build, or Windows/Linux version.
 

@@ -1,10 +1,10 @@
-# 伴读 Bandu
+# deep-teach
 
 **在原课件上学懂，再带着自己的笔记去复习。**
 
-伴读是一个原生 macOS 阅读与学习应用：打开 PDF 或 PPT，框出不懂的地方，老师在旁边解释，并直接在原页上用红笔圈注。学习过程会整理成可编辑的个人笔记，可以大屏复习、同步到 Obsidian，也能导出带批注的 PDF。
+deep-teach（伴读）是一个原生 macOS 阅读与学习应用：打开 PDF 或 PPT，框出不懂的地方，老师在旁边解释，并直接在原页上用红笔圈注。学习过程会整理成可编辑的个人笔记，可以大屏复习、同步到 Obsidian，也能导出带批注的 PDF。
 
-[下载安装](https://github.com/nathanzhang309-droid/bandu/releases/latest) · [English](README.en.md) · [使用指南](docs/USAGE.md) · [隐私说明](PRIVACY.md)
+[下载安装](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) · [English](README.en.md) · [使用指南](docs/USAGE.md) · [隐私说明](PRIVACY.md)
 
 ![伴读自动红笔批注与侧栏讲解，画面使用合成课件](docs/red-pen-demo.png)
 
@@ -24,7 +24,7 @@
 
 需要 **Apple Silicon Mac（M1 或更新）和 macOS 13+**。当前没有 Intel、Windows 或 Linux 版本。
 
-1. 从 [Releases](https://github.com/nathanzhang309-droid/bandu/releases/latest) 下载 `Bandu-1.2.2-macOS-arm64.zip`，解压后把 `伴读.app` 移到“应用程序”。
+1. 从 [Releases](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) 下载 `Bandu-1.2.2-macOS-arm64.zip`，解压后把 `伴读.app` 移到“应用程序”。
 2. 应用采用 ad-hoc 签名，**尚未 Apple 公证**。macOS 可能提示无法验证开发者；确认下载来源后，可在“系统设置 → 隐私与安全”按系统提示允许打开，或自行从源码构建。
 3. 导入课件开始阅读。PPT/PPTX 转换需要本机安装 Keynote；也可以先在 PowerPoint 导出 PDF。
 4. AI 功能另需安装并登录 [Codex CLI](https://developers.openai.com/codex/cli/) 或 [Claude Code](https://code.claude.com/docs/en/overview)，在老师面板选择已登录的一方。CLI 未登录时，阅读仍可使用。
@@ -35,8 +35,8 @@
 安装 Xcode Command Line Tools（`xcode-select --install`），然后：
 
 ```bash
-git clone https://github.com/nathanzhang309-droid/bandu.git
-cd bandu
+git clone https://github.com/nathanzhang309-droid/deep-teach.git
+cd deep-teach
 bash build.sh
 open build/伴读.app
 ```

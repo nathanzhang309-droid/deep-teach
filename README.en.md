@@ -1,10 +1,10 @@
-# Bandu · 伴读
+# deep-teach · 伴读
 
 **Understand your slides, annotate them in place, and review with notes that reflect your questions.**
 
-Bandu is a native macOS reading and study app built with SwiftUI, AppKit, PDFKit, and a local WebKit teaching panel.
+deep-teach is a native macOS reading and study app built with SwiftUI, AppKit, PDFKit, and a local WebKit teaching panel.
 
-[Download](https://github.com/nathanzhang309-droid/bandu/releases/latest) · [中文](README.md) · [Privacy](PRIVACY.md)
+[Download](https://github.com/nathanzhang309-droid/deep-teach/releases/latest) · [中文](README.md) · [Privacy](PRIVACY.md)
 
 ![Automatic red-pen annotations beside a tutor conversation; synthetic lesson](docs/red-pen-demo.png)
 
@@ -23,8 +23,8 @@ Download the Mac archive from Releases and move the app to Applications. Builds 
 
 ```bash
 xcode-select --install
-git clone https://github.com/nathanzhang309-droid/bandu.git
-cd bandu
+git clone https://github.com/nathanzhang309-droid/deep-teach.git
+cd deep-teach
 bash build.sh
 open build/伴读.app
 ```
